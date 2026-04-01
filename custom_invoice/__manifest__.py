@@ -6,6 +6,7 @@
     'depends': ['account'],
     'data': [
         "views/custom_report_invoice.xml",
+        "views/custom_receipt_payment.xml",
     ],
     'installable': True,
     'application': False,
