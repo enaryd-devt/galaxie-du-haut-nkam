@@ -7,6 +7,7 @@
     'data': [
         "views/custom_report_invoice.xml",
         "views/custom_receipt_payment.xml",
+        "views/custom_report_saleorder.xml",
     ],
     'installable': True,
     'application': False,
