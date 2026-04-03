@@ -33,7 +33,7 @@
         
             <!-- donner la couleur du theme -->
             <div class="mb-2 text-primary" style="margin-top: 30px;">
-                <h4 style="margin-bottom: 0;">
+                <h4 style="margin-bottom: 0; font-size: 33px; font-weight: bold;">
                     <span t-if="o.move_type == 'out_invoice' and o.state == 'posted'">FACTURE</span>
                     <span t-if="o.move_type == 'out_invoice' and o.state == 'draft'">FACTURE PROFORMA</span>
                     <span t-if="o.move_type == 'out_invoice' and o.state == 'cancel'">FACTURE ANNULE</span>
@@ -432,29 +432,29 @@
 
 
 <!-- VISA des parties -->
-    <xpath expr="//div[@class='overflow-hidden']" position="after">
-        <div class="row mt-5 text-center fw-bold">
-            
-            <!-- FACTURE CLIENT -->
-            <t t-if="o.move_type == 'out_invoice'">
-                <div class="col-4">
-                    <h5><strong>LA DIRECTION</strong></h5>
-                </div>
-                <div class="col-4"/>
-                <div class="col-4">
-                    <h5><strong>LE CLIENT</strong></h5>
-                </div>
-            </t>
-    
-            <!-- FACTURE FOURNISSEUR -->
-            <t t-elif="o.move_type == 'in_invoice'">
-                <div class="col-4">
-                    <h5><strong>LE GESTIONNAIRE</strong></h5>
-                </div>
-            </t>
-    
-        </div>
-    </xpath>
+<xpath expr="//div[@class='overflow-hidden']" position="after">
+    <div class="row mt-5 text-center fw-bold">
+        
+        <!-- FACTURE CLIENT -->
+        <t t-if="o.move_type == 'out_invoice'">
+            <div class="col-4 fw-bold">
+                <h5><strong>LA DIRECTION</strong></h5>
+            </div>
+            <div class="col-4 fw-bold"/>
+            <div class="col-4 fw-bold">
+                <h5><strong>LE CLIENT</strong></h5>
+            </div>
+        </t>
+
+        <!-- FACTURE FOURNISSEUR -->
+        <t t-elif="o.move_type == 'in_invoice'">
+            <div class="col-4 fw-bold">
+                <h5><strong>LE GESTIONNAIRE</strong></h5>
+            </div>
+        </t>
+
+    </div>
+</xpath>
 
 
 <!-- mention imprimé le -->
