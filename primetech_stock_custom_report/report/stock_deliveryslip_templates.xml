@@ -321,17 +321,18 @@
                                 </td>
 
                                 <!-- DATE EXP -->
-                                <td class="text-center">
+                                    <td class="text-center">
 
-                                    <t t-if="ml and ml.lot_id and ml.lot_id.use_date">
-                                        <span t-field="ml.lot_id.use_date"/>
-                                    </t>
+                                        <t t-if="ml and ml.lot_id and ml.lot_id.use_date">
+                                            <span t-field="ml.lot_id.use_date"
+                                                t-options='{"format": "dd/MM/yyyy"}'/>
+                                        </t>
 
-                                    <t t-else="">
-                                        -
-                                    </t>
+                                        <t t-else="">
+                                            -
+                                        </t>
 
-                                </td>
+                                    </td>
 
                             </t>
 
