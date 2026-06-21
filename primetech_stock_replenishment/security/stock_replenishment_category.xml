@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <record
+        id="module_category_stock_replenishment"
+        model="ir.module.category"
+    >
+
+        <field name="name">
+            Réapprovisionnement
+        </field>
+
+        <field name="description">
+            Gestion des bons de réapprovisionnement
+        </field>
+
+        <field name="sequence">
+            101
+        </field>
+
+    </record>
+
+</odoo>

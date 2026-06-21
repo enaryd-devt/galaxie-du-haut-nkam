@@ -140,6 +140,55 @@
 
                         </div>
 
+                        <!-- ================================= -->
+                        <!-- LOTS -->
+                        <!-- ================================= -->
+
+                        <div t-if="lots?.length"
+                            class="pt-section">
+
+                            <div class="pt-section-title">
+                                Lots disponibles
+                            </div>
+
+                            <div t-foreach="lots || []"
+                                t-as="lot"
+                                t-key="lot.id"
+                                class="pt-lot-row">
+
+                                <div class="pt-lot-name">
+                                    <i class="fa fa-barcode"/>
+                                    <t t-esc="lot.name"/>
+                                </div>
+
+                                <div class="pt-lot-info">
+
+                                    <span t-if="lot.warehouse_name">
+                                        <i class="fa fa-building"/>
+                                        <t t-esc="lot.warehouse_name"/>
+                                    </span>
+
+                                    <span t-if="lot.location_name">
+                                        <i class="fa fa-map-marker"/>
+                                        <t t-esc="lot.location_name"/>
+                                    </span>
+
+                                </div>
+
+                                <div class="pt-lot-qty">
+                                    Qté: <t t-esc="lot.quantity_available"/>
+                                    <span class="ml-2">
+                                        Prévu: <t t-esc="lot.quantity_reserved"/>
+                                    </span>
+                                </div>
+
+                                <div class="pt-lot-exp" t-if="lot.expiration_date">
+                                    Exp: <t t-esc="lot.expiration_date"/>
+                                </div>
+
+                            </div>
+
+                        </div>
                     </div>
 
                 </div>
