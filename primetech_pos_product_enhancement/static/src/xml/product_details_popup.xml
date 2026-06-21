@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ===================================================== -->
+    <!-- PRIME TECH POS PRODUCT CARD ENHANCEMENT -->
+    <!-- ===================================================== -->
+
+    <t t-inherit="point_of_sale.ProductCard"
+       t-inherit-mode="extension">
+
+
+        <xpath expr="//article"
+               position="inside">
+
+            <!-- ============================================= -->
+            <!-- HOVER AREA -->
+            <!-- ============================================= -->
+
+            <div class="pt-hover-wrapper">
+
+                <!-- BUTTON -->
+
+                <button class="pt-info-button">
+
+                    <i class="fa fa-info-circle"/>
+
+                </button>
+
+                <!-- ========================================= -->
+                <!-- ADVANCED PANEL -->
+                <!-- ========================================= -->
+
+                <div class="pt-hover-panel">
+
+                    <!-- HEADER -->
+
+                    <!-- ============================================= -->
+                    <!-- PANEL HEADER MODERNE -->
+                    <!-- ============================================= -->
+
+                    <div class="pt-panel-header">
+
+                        <div class="pt-header-top">
+
+                            <!-- NOM PRODUIT -->
+                            <h3 class="pt-product-name">
+                                <t t-esc="props.product.display_name"/>
+                            </h3>
+
+                            <!-- BADGE STATUS -->
+                            <span class="pt-stock-state"
+                                t-att-class="stockClass">
+
+                                <t t-if="isOutOfStock">
+                                    <i class="fa fa-times-circle"/>
+                                    <span>Rupture</span>
+                                </t>
+
+                                <t t-elif="isLowStock">
+                                    <i class="fa fa-exclamation-triangle"/>
+                                    <span>Faible</span>
+                                </t>
+
+                                <t t-else="">
+                                    <i class="fa fa-check-circle"/>
+                                    <span>Disponible</span>
+                                </t>
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <!-- BODY -->
+
+                    <div class="pt-panel-body">
+
+                        <!-- STOCK -->
+
+                        <div class="pt-info-row">
+                            <span class="pt-label">Stock disponible</span>
+                            <span class="pt-value">
+                                <t t-esc="qtyAvailable"/>
+                            </span>
+                        </div>
+
+                        <!-- FORECAST -->
+
+                        <div class="pt-info-row">
+                            <span class="pt-label">Stock prévu</span>
+                            <span class="pt-value">
+                                <t t-esc="virtualAvailable"/>
+                            </span>
+                        </div>
+
+                        <!-- PRICE -->
+
+                        <div class="pt-info-row">
+                            <span class="pt-label">Prix de vente</span>
+                            <span class="pt-value">
+                                <t t-esc="formattedPrice"/>
+                            </span>
+                        </div>
+
+                        <!-- COST -->
+
+                        <div class="pt-info-row">
+                            <span class="pt-label">Coût</span>
+                            <span class="pt-value">
+                                <t t-esc="productCost"/>
+                            </span>
+                        </div>
+
+                        <!-- MARGIN -->
+
+                        <div class="pt-info-row">
+                            <span class="pt-label">Marge</span>
+
+                            <span class="pt-value pt-margin-value">
+
+                                <t t-esc="marginAmount"/>
+
+                                (<t t-esc="marginPercent"/>%)
+
+                            </span>
+                        </div>
+
+                        <!-- ================================= -->
+                        <!-- TRACKING -->
+                        <!-- ================================= -->
+
+                        <div t-if="hasTracking"
+                            class="pt-tracking-badge">
+
+                            <i class="fa fa-barcode"/>
+
+                            Ce produit est suivi par lot / série
+                        
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </xpath>
+
+    </t>
+
+</templates>

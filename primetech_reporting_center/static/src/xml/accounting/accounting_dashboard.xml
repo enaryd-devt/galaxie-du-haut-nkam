@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+
+<t
+    t-name="primetech_reporting_center.AccountingDashboard"
+    owl="1"
+>
+
+<div class="pt-dashboard">
+
+    <!-- ===================================== -->
+    <!-- HEADER PREMIUM -->
+    <!-- ===================================== -->
+
+    <div class="dashboard-header">
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                align-items-center
+            "
+        >
+
+            <div>
+
+                <div
+                    class="
+                        dashboard-subtitle
+                    "
+                >
+
+                    FINANCE ET ACCOUNTING
+
+                </div>
+
+                <h1>
+
+                    Comptabilité
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Pilotage financier,
+                    trésorerie, créances
+                    et rentabilité
+
+                </div>
+
+            </div>
+
+            <div
+                class="
+                    dashboard-badge
+                "
+            >
+
+                <i
+                    class="
+                        fa fa-landmark
+                        me-2
+                    "
+                />
+
+                Executive Finance Dashboard
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================== -->
+    <!-- KPI -->
+    <!-- ===================================== -->
+
+    <FinanceKpis/>
+
+    <!-- ===================================== -->
+    <!-- SANTE FINANCIERE -->
+    <!-- ===================================== -->
+
+    <div class="row mt-4">
+
+        <div class="col-12">
+
+            <div
+                class="
+                    dashboard-card
+                "
+            >
+
+                <div
+                    class="
+                        card-header
+                    "
+                >
+
+                    <h5>
+
+                        <i
+                            class="
+                                fa fa-heart-pulse
+                                me-2
+                            "
+                        />
+
+                        Santé Financière
+
+                    </h5>
+
+                </div>
+
+                <div
+                    class="
+                        card-body
+                    "
+                >
+
+                    <FinancialHealth/>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================== -->
+    <!-- ANALYSES -->
+    <!-- ===================================== -->
+
+    <div class="row mt-4">
+
+        <!-- CREANCES -->
+
+        <div class="col-xl-4">
+
+            <div
+                class="
+                    dashboard-card
+                    h-100
+                "
+            >
+
+                <div
+                    class="
+                        card-header
+                    "
+                >
+
+                    <h5>
+
+                        <i
+                            class="
+                                fa fa-file-invoice-dollar
+                                me-2
+                            "
+                        />
+
+                        Analyse des Créances
+
+                    </h5>
+
+                </div>
+
+                <div
+                    class="
+                        card-body
+                    "
+                >
+
+                    <ReceivablesAnalysis/>
+
+                </div>
+
+            </div>
+
+        </div>
+                <!-- TRESORERIE -->
+
+        <div class="col-xl-4">
+
+            <div
+                class="
+                    dashboard-card
+                    h-100
+                "
+            >
+
+                <div
+                    class="
+                        card-header
+                    "
+                >
+
+                    <h5>
+
+                        <i
+                            class="
+                                fa fa-chart-line
+                                me-2
+                            "
+                        />
+
+                        Prévision de Trésorerie
+
+                    </h5>
+
+                </div>
+
+                <div
+                    class="
+                        card-body
+                    "
+                >
+
+                    <CashflowForecast/>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- POSITION FINANCIERE -->
+
+        <div class="col-xl-4">
+
+            <div
+                class="
+                    dashboard-card
+                    h-100
+                "
+            >
+
+                <div
+                    class="
+                        card-header
+                    "
+                >
+
+                    <h5>
+
+                        <i
+                            class="
+                                fa fa-scale-balanced
+                                me-2
+                            "
+                        />
+
+                        Situation Financière
+
+                    </h5>
+
+                </div>
+
+                <div
+                    class="
+                        card-body
+                    "
+                >
+
+                    <FinancialPosition/>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</t>
+
+</templates>
