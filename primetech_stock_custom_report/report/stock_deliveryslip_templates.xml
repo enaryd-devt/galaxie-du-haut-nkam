@@ -247,39 +247,40 @@
 
                 </div>
 
+        
                 <!-- ========================= -->
                 <!-- PRODUITS -->
                 <!-- ========================= -->
-                <table class="table table-bordered">
+                <table class="table table-sm table-bordered align-middle">
 
                     <thead class="bg-primary">
-                        <tr style="color:white !important;">
+                        <tr>
 
-                            <th style="color:white !important;">Produit</th>
+                            <th class="text-start text-white">
+                                Produit
+                            </th>
 
-                            <th class="text-center" style="color:white !important;">
+                            <th class="text-center text-white" style="width:90px;">
                                 Qté Cmd
                             </th>
 
-                            <th class="text-center" style="color:white !important;">
+                            <th class="text-center text-white" style="width:90px;">
                                 Qté Livrée
                             </th>
 
-                            <!-- LOT -->
-                            <th t-if="any(o.move_line_ids.mapped('lot_id'))"
-                                class="text-center"
-                                style="color:white !important;">
-                                Lot / Série
-                            </th>
+                            <t t-if="any(o.move_ids.mapped('move_line_ids.lot_id'))">
 
-                            <!-- EXP -->
-                            <th t-if="any(o.move_line_ids.mapped('lot_id'))"
-                                class="text-center"
-                                style="color:white !important;">
-                                Date Exp.
-                            </th>
+                                <th class="text-center text-white" style="width:140px;">
+                                    Lot / Série
+                                </th>
 
-                            <th class="text-center" style="color:white !important;">
+                                <th class="text-center text-white" style="width:120px;">
+                                    Expiration
+                                </th>
+
+                            </t>
+
+                            <th class="text-center text-white" style="width:90px;">
                                 Unité
                             </th>
 
@@ -290,6 +291,9 @@
 
                         <tr t-foreach="o.move_ids" t-as="line">
 
+                            <t t-set="ml"
+                            t-value="line.move_line_ids[:1] and line.move_line_ids[0]"/>
+
                             <td>
                                 <span t-field="line.product_id"/>
                             </td>
@@ -299,25 +303,38 @@
                             </td>
 
                             <td class="text-center">
-                                <span t-field="line.quantity"/>
+                                <span t-esc="sum(line.move_line_ids.mapped('quantity'))"/>
                             </td>
 
-                            <!-- LOT -->
-                            <td class="text-center"
-                                t-if="line.move_line_ids and line.move_line_ids[0].lot_id">
-                                <span t-field="line.move_line_ids[0].lot_id.name"/>
-                            </td>
+                            <t t-if="any(o.move_ids.mapped('move_line_ids.lot_id'))">
 
-                            <!-- EXPIRATION -->
-                            <t t-set="ml" t-value="line.move_line_ids and line.move_line_ids[0]"/>
+                                <!-- LOT -->
+                                <td class="text-center">
 
-                            <td class="text-center" t-if="ml and ml.lot_id">
-                                <span t-field="ml.lot_id.name"/>
-                            </td>
+                                    <t t-if="ml and ml.lot_id">
+                                        <span t-field="ml.lot_id.name"/>
+                                    </t>
 
-                            <td class="text-center" t-if="ml and ml.lot_id and ml.lot_id.use_date">
-                                <span t-field="ml.lot_id.use_date"/>
-                            </td>
+                                    <t t-else="">
+                                        -
+                                    </t>
+
+                                </td>
+
+                                <!-- DATE EXP -->
+                                <td class="text-center">
+
+                                    <t t-if="ml and ml.lot_id and ml.lot_id.use_date">
+                                        <span t-field="ml.lot_id.use_date"/>
+                                    </t>
+
+                                    <t t-else="">
+                                        -
+                                    </t>
+
+                                </td>
+
+                            </t>
 
                             <td class="text-center">
                                 <span t-field="line.product_uom"/>
