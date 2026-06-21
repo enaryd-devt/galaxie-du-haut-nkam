@@ -4,12 +4,32 @@ from odoo import models, fields, api
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-    alert_quantity = fields.Float(string='Alert Quantity')
 
+    discount_percent = fields.Float(
+        string="Remise (%)",
+        digits=(16, 2),
+        default=0.0,
+    )
+
+    @api.constrains('discount_percent')
+    def _check_discount_percent(self):
+
+        for rec in self:
+
+            if rec.discount_percent < 0 or rec.discount_percent > 100:
+
+                raise ValidationError(
+                    "La remise doit être comprise entre 0 et 100 %."
+                )
+
+    alert_quantity = fields.Float(string='Alert Quantity')
+    optimal_quantity = fields.Float(string="Optimal Quantity")
+    
     show_alert_quantity = fields.Boolean(
         compute='_compute_show_alert_quantity',
         string="Show Alert Quantity Field"
     )
+       
 
     def _compute_show_alert_quantity(self):
         method = self.env['ir.config_parameter'].sudo().get_param('zehntech_product_low_stock_alert.method', 'global')
