@@ -247,40 +247,39 @@
 
                 </div>
 
-        
                 <!-- ========================= -->
                 <!-- PRODUITS -->
                 <!-- ========================= -->
-                <table class="table table-sm table-bordered align-middle">
+                <table class="table table-bordered">
 
                     <thead class="bg-primary">
                         <tr style="color:white !important;">
 
-                            <th class="text-start text-white">
-                                Produit
-                            </th>
+                            <th style="color:white !important;">Produit</th>
 
-                            <th class="text-center text-white" style="width:90px;">
+                            <th class="text-center" style="color:white !important;">
                                 Qté Cmd
                             </th>
 
-                            <th class="text-center text-white" style="width:90px;">
+                            <th class="text-center" style="color:white !important;">
                                 Qté Livrée
                             </th>
 
-                            <t t-if="any(o.move_ids.mapped('move_line_ids.lot_id'))">
+                            <!-- LOT -->
+                            <th t-if="any(o.move_line_ids.mapped('lot_id'))"
+                                class="text-center"
+                                style="color:white !important;">
+                                Lot / Série
+                            </th>
 
-                                <th class="text-center text-white" style="width:140px;">
-                                    Lot / Série
-                                </th>
+                            <!-- EXP -->
+                            <th t-if="any(o.move_line_ids.mapped('lot_id'))"
+                                class="text-center"
+                                style="color:white !important;">
+                                Date Exp.
+                            </th>
 
-                                <th class="text-center text-white" style="width:120px;">
-                                    Expiration
-                                </th>
-
-                            </t>
-
-                            <th class="text-center text-white" style="width:90px;">
+                            <th class="text-center" style="color:white !important;">
                                 Unité
                             </th>
 
