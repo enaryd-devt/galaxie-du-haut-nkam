@@ -3,7 +3,7 @@
     <template id="custom_report_invoice" 
               inherit_id="account.report_invoice_document">
 
-        <xpath expr="//report[@id='account.account_invoices']" position="attributes">
+        <xpath expr="//report[@id='account.report_invoice_document']" position="attributes">
             <attribute name="print_report_name">
                 (object.partner_id.name or '').replace('/', '-')
                 + ' - '
@@ -480,4 +480,3 @@
     </template>
 
 </odoo>
-
