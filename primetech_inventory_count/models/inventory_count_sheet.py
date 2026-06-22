@@ -215,9 +215,15 @@ class InventoryCountSheet(models.Model):
     @api.onchange("warehouse_id")
     def _onchange_warehouse_id(self):
 
-        sheet.location_id = False
+        for sheet in self:
 
-        self.line_ids = [(5, 0, 0)]
+            sheet.location_id = False
+
+            # On vide les lignes uniquement
+            # si l'utilisateur change réellement d'entrepôt
+
+            if sheet.line_ids:
+                sheet.line_ids = [(5, 0, 0)]
 
     @api.depends("warehouse_id")
     def _compute_allowed_locations(self):
@@ -461,8 +467,9 @@ class InventoryCountSheet(models.Model):
 
         return True
 
-    def action_export_to_odoo_inventory(self):
+    from odoo import fields
 
+    def action_export_to_odoo_inventory(self):
 
         self.ensure_one()
 
@@ -478,70 +485,102 @@ class InventoryCountSheet(models.Model):
 
             if not quant:
 
-                quant = self.env["stock.quant"].search([
-                    ("product_id", "=", line.product_id.id),
-                    ("location_id", "=", line.count_location_id.id),
-                    ("lot_id", "=", line.lot_id.id),
-                    ("company_id", "=", self.env.company.id),
-                ], limit=1)
+                quant = self.env["stock.quant"].search(
+                    [
+                        ("product_id", "=", line.product_id.id),
+                        ("location_id", "=", line.count_location_id.id),
+                        ("lot_id", "=", line.lot_id.id if line.lot_id else False),
+                        ("company_id", "=", self.env.company.id),
+                    ],
+                    limit=1
+                )
 
             if not quant:
 
                 quant = self.env["stock.quant"].create({
                     "product_id": line.product_id.id,
                     "location_id": line.count_location_id.id,
-                    "lot_id": line.lot_id.id or False,
+                    "lot_id": line.lot_id.id if line.lot_id else False,
                     "company_id": self.env.company.id,
                 })
 
-            # ==========================
+            # =====================================
             # Préparation Inventaire Odoo
-            # ==========================
+            # =====================================
 
             quant.write({
                 "inventory_quantity": line.qty_counted,
                 "inventory_quantity_set": True,
             })
 
-            # ==========================
-            # Historique
-            # ==========================
+            # =====================================
+            # Historique des ajustements
+            # =====================================
 
             Log.create({
 
-                "sheet_id": sheet.id,
+                "sheet_id": self.id,
 
                 "line_id": line.id,
 
                 "product_id": line.product_id.id,
 
-                "lot_id": line.lot_id.id,
+                "lot_id":
+                    line.lot_id.id
+                    if line.lot_id
+                    else False,
 
-                "expiration_date": line.expiration_date,
+                "expiration_date":
+                    line.expiration_date,
 
-                "warehouse_id": self.warehouse_id.id,
+                "warehouse_id":
+                    self.warehouse_id.id,
 
-                "location_id": line.count_location_id.id,
+                "location_id":
+                    line.count_location_id.id,
 
-                "qty_system": line.qty_system,
+                "qty_system":
+                    line.qty_system,
 
-                "qty_counted": line.qty_counted,
+                "qty_counted":
+                    line.qty_counted,
 
-                "before_qty": line.qty_system,
+                "before_qty":
+                    line.qty_system,
 
-                "after_qty": line.qty_counted,
+                "after_qty":
+                    line.qty_counted,
 
-                "difference": line.difference,
+                "difference":
+                    line.difference,
 
-                "difference_type": line.difference_type,
+                "difference_type":
+                    line.difference_type,
 
-                "counted_by": self.env.user.id,
+                "counted_by":
+                    self.env.user.id,
 
-                "adjustment_date": fields.Datetime.now(),
+                "adjustment_date":
+                    fields.Datetime.now(),
+            })
+
+            # =====================================
+            # Mise à jour ligne
+            # =====================================
+
+            line.write({
+
+                "adjustment_applied": True,
+
+                "validated": True,
 
             })
 
             exported_count += 1
+
+        # =====================================
+        # Mise à jour feuille
+        # =====================================
 
         self.write({
 
@@ -555,9 +594,19 @@ class InventoryCountSheet(models.Model):
 
         })
 
-        return True
-
-    
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Export terminé",
+                "message": (
+                    f"{exported_count} ligne(s) exportée(s) "
+                    f"vers l'inventaire Odoo."
+                ),
+                "type": "success",
+                "sticky": False,
+            },
+        }
     
     def action_cancel(self):
 

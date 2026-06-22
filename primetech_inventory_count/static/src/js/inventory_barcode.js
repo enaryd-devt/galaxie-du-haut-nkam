@@ -64,15 +64,17 @@ setInterval(() => {
 
             try {
 
-                const result =
-                    await odoo.__WOWL_DEBUG__.root.env.services.orm.call(
-                        "primetech.inventory.count.sheet",
-                        "action_scan_barcode",
-                        [
-                            [sheetId],
-                            barcode
-                        ]
-                    );
+                const currentUrl = window.location.href;
+
+                console.log(currentUrl);
+
+                const match = currentUrl.match(/\/(\d+)(\?|$)/);
+
+                const sheetId = match
+                    ? parseInt(match[1])
+                    : false;
+
+                console.log("SHEETID =", sheetId);
 
                 console.log(result);
 
