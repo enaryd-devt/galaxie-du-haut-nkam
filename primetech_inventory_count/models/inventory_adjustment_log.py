@@ -57,7 +57,7 @@ class InventoryAdjustmentLog(models.Model):
         [
             ("equal", "Conforme"),
             ("missing", "Manquant"),
-            ("excess", "Surplus"),
+            ("excess", "excess"),
         ]
     )
 

@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -160,58 +161,111 @@ class InventoryCountSheet(models.Model):
         store=False,
     )
 
+    is_locked = fields.Boolean(
+        compute="_compute_is_locked"
+    )
+
+    @api.depends("state")
+    def _compute_is_locked(self):
+
+        for rec in self:
+
+            rec.is_locked = rec.state in (
+                "validated",
+                "exported",
+                "cancel",
+            )
+
     def _compute_record_id(self):
         for rec in self:
             rec.record_id = rec.id
 
-    
-
+  
     def action_scan_barcode(self, barcode):
-
-        _logger.warning(
-            "SELF IDS=%s BARCODE=%s",
-            self.ids,
-            barcode
-        )
 
         self.ensure_one()
 
-        product = self.env["product.product"].search(
+        _logger.warning(
+            "SCAN FEUILLE=%s BARCODE=%s",
+            self.id,
+            barcode,
+        )
+
+        barcode = (barcode or "").strip()
+
+        if not barcode:
+
+            return {
+                "success": False,
+                "message": "Code-barres vide.",
+            }
+
+        product = self.env[
+            "product.product"
+        ].search(
             [
                 ("barcode", "=", barcode)
             ],
-            limit=1
+            limit=1,
         )
 
         if not product:
+
+            _logger.warning(
+                "CODE BARRE INTROUVABLE : %s",
+                barcode,
+            )
 
             return {
                 "success": False,
                 "message": (
                     f"Le code-barres {barcode} n'existe pas."
-                )
+                ),
             }
 
         line = self.env[
             "primetech.inventory.count.line"
         ].create({
+
             "sheet_id": self.id,
+
             "product_id": product.id,
-            "count_location_id": self.location_id.id or False,
+
+            "count_location_id":
+                self.location_id.id
+                if self.location_id
+                else False,
+
             "qty_counted": 1,
+
+            "generated": False,
+
+            "validated": False,
+
             "is_manual": True,
         })
 
         _logger.warning(
-            "LIGNE CREEE=%s",
-            line.id
+            "LIGNE AJOUTEE ID=%s PRODUIT=%s",
+            line.id,
+            product.display_name,
         )
 
         return {
-            "success": True,
-            "product_name": product.display_name,
-        }
 
+            "success": True,
+
+            "product_name":
+                product.display_name,
+
+            "line_id":
+                line.id,
+
+            "message":
+                f"{product.display_name} ajouté.",
+        }
+    
+    
     @api.onchange("warehouse_id")
     def _onchange_warehouse_id(self):
 
@@ -219,11 +273,11 @@ class InventoryCountSheet(models.Model):
 
             sheet.location_id = False
 
-            # On vide les lignes uniquement
-            # si l'utilisateur change réellement d'entrepôt
+                # On vide les lignes uniquement
+                # si l'utilisateur change réellement d'entrepôt
 
             if sheet.line_ids:
-                sheet.line_ids = [(5, 0, 0)]
+                    sheet.line_ids = [(5, 0, 0)]
 
     @api.depends("warehouse_id")
     def _compute_allowed_locations(self):
@@ -333,12 +387,11 @@ class InventoryCountSheet(models.Model):
                 )
 
         return super().create(vals_list)
-
     def action_generate_lines(self):
 
         self.ensure_one()
 
-        if not sheet.location_id:
+        if not self.location_id:
             raise UserError(
                 "Veuillez sélectionner un emplacement principal."
             )
@@ -356,7 +409,7 @@ class InventoryCountSheet(models.Model):
             ))
 
         quants = self.env["stock.quant"].search([
-            ("location_id", "child_of", sheet.location_id.id),
+            ("location_id", "child_of", self.location_id.id),
             ("quantity", ">", 0),
         ])
 
@@ -426,7 +479,6 @@ class InventoryCountSheet(models.Model):
             "type": "ir.actions.client",
             "tag": "reload",
         }
-
     def action_confirm(self):
 
         for rec in self:
@@ -467,95 +519,202 @@ class InventoryCountSheet(models.Model):
 
         return True
 
-    from odoo import fields
+
 
     def action_export_to_odoo_inventory(self):
 
+    
         self.ensure_one()
+
+        if self.state == "exported":
+            raise UserError(
+                "Cette feuille a déjà été exportée."
+            )
+
+        if not self.line_ids:
+            raise UserError(
+                "Aucune ligne à exporter."
+            )
 
         Log = self.env[
             "primetech.inventory.adjustment.log"
         ]
 
-        exported_count = 0
+        grouped_lines = {}
+
+        # =====================================
+        # CONSOLIDATION DES LIGNES
+        # =====================================
 
         for line in self.line_ids:
 
-            quant = line.quant_id
+            key = (
+
+                line.product_id.id,
+
+                line.barcode or "",
+
+                line.lot_id.id if line.lot_id else False,
+
+                line.expiration_date or False,
+
+                line.count_location_id.id if line.count_location_id else False,
+            )
+
+            if key not in grouped_lines:
+
+                grouped_lines[key] = {
+
+                    "product_id":
+                        line.product_id,
+
+                    "lot_id":
+                        line.lot_id,
+
+                    "expiration_date":
+                        line.expiration_date,
+
+                    "location_id":
+                        line.count_location_id,
+
+                    "qty_counted":
+                        0.0,
+
+                    "qty_system":
+                        0.0,
+
+                    "lines":
+                        self.env[
+                            "primetech.inventory.count.line"
+                        ],
+                }
+
+            grouped_lines[key]["qty_counted"] += (
+                line.qty_counted
+            )
+
+            grouped_lines[key]["qty_system"] += (
+                line.qty_system
+            )
+
+            grouped_lines[key]["lines"] |= line
+
+        exported_count = 0
+
+        # =====================================
+        # EXPORT CONSOLIDÉ
+        # =====================================
+
+        for data in grouped_lines.values():
+
+            quant = self.env["stock.quant"].search(
+                [
+                    (
+                        "product_id",
+                        "=",
+                        data["product_id"].id
+                    ),
+                    (
+                        "location_id",
+                        "=",
+                        data["location_id"].id
+                    ),
+                    (
+                        "lot_id",
+                        "=",
+                        data["lot_id"].id
+                        if data["lot_id"]
+                        else False
+                    ),
+                    (
+                        "company_id",
+                        "=",
+                        self.env.company.id
+                    ),
+                ],
+                limit=1,
+            )
 
             if not quant:
 
-                quant = self.env["stock.quant"].search(
-                    [
-                        ("product_id", "=", line.product_id.id),
-                        ("location_id", "=", line.count_location_id.id),
-                        ("lot_id", "=", line.lot_id.id if line.lot_id else False),
-                        ("company_id", "=", self.env.company.id),
-                    ],
-                    limit=1
-                )
+                quant = self.env[
+                    "stock.quant"
+                ].create({
 
-            if not quant:
+                    "product_id":
+                        data["product_id"].id,
 
-                quant = self.env["stock.quant"].create({
-                    "product_id": line.product_id.id,
-                    "location_id": line.count_location_id.id,
-                    "lot_id": line.lot_id.id if line.lot_id else False,
-                    "company_id": self.env.company.id,
+                    "location_id":
+                        data["location_id"].id,
+
+                    "lot_id":
+                        data["lot_id"].id
+                        if data["lot_id"]
+                        else False,
+
+                    "company_id":
+                        self.env.company.id,
                 })
 
-            # =====================================
-            # Préparation Inventaire Odoo
-            # =====================================
-
             quant.write({
-                "inventory_quantity": line.qty_counted,
-                "inventory_quantity_set": True,
-            })
 
-            # =====================================
-            # Historique des ajustements
-            # =====================================
+                "inventory_quantity":
+                    data["qty_counted"],
+
+                "inventory_quantity_set":
+                    True,
+            })
 
             Log.create({
 
-                "sheet_id": self.id,
+                "sheet_id":
+                    self.id,
 
-                "line_id": line.id,
-
-                "product_id": line.product_id.id,
+                "product_id":
+                    data["product_id"].id,
 
                 "lot_id":
-                    line.lot_id.id
-                    if line.lot_id
+                    data["lot_id"].id
+                    if data["lot_id"]
                     else False,
 
                 "expiration_date":
-                    line.expiration_date,
+                    data["expiration_date"],
 
                 "warehouse_id":
                     self.warehouse_id.id,
 
                 "location_id":
-                    line.count_location_id.id,
+                    data["location_id"].id,
 
                 "qty_system":
-                    line.qty_system,
+                    data["qty_system"],
 
                 "qty_counted":
-                    line.qty_counted,
+                    data["qty_counted"],
 
                 "before_qty":
-                    line.qty_system,
+                    data["qty_system"],
 
                 "after_qty":
-                    line.qty_counted,
+                    data["qty_counted"],
 
                 "difference":
-                    line.difference,
+                    data["qty_counted"]
+                    - data["qty_system"],
 
                 "difference_type":
-                    line.difference_type,
+                    (
+                        "excess"
+                        if data["qty_counted"]
+                        > data["qty_system"]
+                        else
+                        "missing"
+                        if data["qty_counted"]
+                        < data["qty_system"]
+                        else
+                        "equal"
+                    ),
 
                 "counted_by":
                     self.env.user.id,
@@ -564,23 +723,14 @@ class InventoryCountSheet(models.Model):
                     fields.Datetime.now(),
             })
 
-            # =====================================
-            # Mise à jour ligne
-            # =====================================
-
-            line.write({
+            data["lines"].write({
 
                 "adjustment_applied": True,
 
                 "validated": True,
-
             })
 
             exported_count += 1
-
-        # =====================================
-        # Mise à jour feuille
-        # =====================================
 
         self.write({
 
@@ -591,23 +741,39 @@ class InventoryCountSheet(models.Model):
 
             "applied_by":
                 self.env.user.id,
-
         })
 
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
+
+            "type":
+                "ir.actions.client",
+
+            "tag":
+                "display_notification",
+            
+            "tag": "reload",
+
             "params": {
-                "title": "Export terminé",
-                "message": (
-                    f"{exported_count} ligne(s) exportée(s) "
-                    f"vers l'inventaire Odoo."
-                ),
-                "type": "success",
-                "sticky": False,
+
+                "title":
+                    "Export terminé",
+
+                "message":
+                    (
+                        f"{exported_count} ligne(s) "
+                        f"consolidée(s) exportée(s) "
+                        f"vers l'inventaire Odoo."
+                    ),
+
+                "type":
+                    "success",
+
+                "sticky":
+                    False,
             },
         }
-    
+
+
     def action_cancel(self):
 
         self.write({
@@ -656,16 +822,18 @@ class InventoryCountSheet(models.Model):
             "primetech.inventory.adjustment.preview"
         ]
 
+        # Nettoyage ancienne prévisualisation
         Preview.search([
-            ("sheet_id", "=", sheet.id)
+            ("sheet_id", "=", self.id)
         ]).unlink()
 
+        # Génération
         for line in self.line_ids:
 
             Preview.create({
 
                 "sheet_id":
-                    sheet.id,
+                    self.id,
 
                 "line_id":
                     line.id,
@@ -674,13 +842,13 @@ class InventoryCountSheet(models.Model):
                     line.product_id.id,
 
                 "lot_id":
-                    line.lot_id.id,
+                    line.lot_id.id or False,
 
                 "system_location_id":
-                    line.system_location_id.id,
+                    line.system_location_id.id or False,
 
                 "count_location_id":
-                    line.count_location_id.id,
+                    line.count_location_id.id or False,
 
                 "qty_system":
                     line.qty_system,
@@ -700,11 +868,65 @@ class InventoryCountSheet(models.Model):
 
         return {
             "type": "ir.actions.act_window",
-            "name": "Prévisualisation",
+            "name": "Prévisualisation des ajustements",
             "res_model":
                 "primetech.inventory.adjustment.preview",
             "view_mode": "list",
             "target": "new",
+            "domain": [
+                ("sheet_id", "=", self.id)
+            ],
         }
-  
     
+
+    def action_reset_to_draft(self):
+
+        self.ensure_one()
+
+        if not self.env.user.has_group(
+            "primetech_inventory_count.group_inventory_manager"
+        ):
+            raise UserError(
+                "Vous n'avez pas les droits nécessaires."
+            )
+
+        self.write({
+
+            "state": "draft",
+
+            "validated_by": False,
+
+            "validation_date": False,
+
+            "applied_by": False,
+
+            "adjustment_date": False,
+
+        })
+
+        return True
+    
+    def write(self, vals):
+
+        protected_fields = {
+            "warehouse_id",
+            "location_id",
+            "line_ids",
+            "export_mode",
+        }
+
+        for rec in self:
+
+            if rec.state in (
+                "validated",
+                "exported",
+                "cancel",
+            ):
+
+                if protected_fields.intersection(vals.keys()):
+
+                    raise UserError(
+                        "Cette feuille est verrouillée."
+                    )
+
+        return super().write(vals)

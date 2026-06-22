@@ -1,13 +1,15 @@
 from odoo import models, fields
 
-
 class InventoryAdjustmentPreview(models.TransientModel):
     
     _name = "primetech.inventory.adjustment.preview"
     _description = "Prévisualisation Ajustement"
 
+
     sheet_id = fields.Many2one(
-        "primetech.inventory.count.sheet"
+        "primetech.inventory.count.sheet",
+        required=True,
+        ondelete="cascade",
     )
 
     line_id = fields.Many2one(
@@ -39,7 +41,16 @@ class InventoryAdjustmentPreview(models.TransientModel):
     difference_type = fields.Selection([
         ("equal", "Conforme"),
         ("missing", "Manquant"),
-        ("excess", "Surplus"),
+        ("excess", "excess"),
     ])
 
     location_difference = fields.Boolean()
+
+    def action_export_from_preview(self):
+
+        self.ensure_one()
+
+        if not self.sheet_id:
+            return False
+
+        return self.sheet_id.action_export_to_odoo_inventory()

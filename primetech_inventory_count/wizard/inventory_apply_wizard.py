@@ -33,3 +33,11 @@ class InventoryApplyWizard(models.TransientModel):
         return {
             "type": "ir.actions.act_window_close",
         }
+    def action_export_from_preview(self):
+
+        self.ensure_one()
+
+        if not self.sheet_id:
+            return False
+
+        return self.sheet_id.action_export_to_odoo_inventory()

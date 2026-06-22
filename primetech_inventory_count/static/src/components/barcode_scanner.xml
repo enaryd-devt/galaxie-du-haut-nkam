@@ -2,18 +2,56 @@
 
 <templates xml:space="preserve">
 
-    <t
-        t-name="primetech_inventory_count.BarcodeScanner">
+        <t t-name="primetech_inventory_count.BarcodeScanner">
 
-        <div class="pt_barcode_wrapper">
+        <div class="pt_scan_card">
 
-            <input
-                type="text"
-                class="form-control pt_barcode_input"
-                placeholder="Scanner ou saisir un code-barres..."
-                t-ref="barcodeInput"
-                t-on-keydown="onKeyDown"
-            />
+            <div class="pt_scan_header">
+
+                <span>Scanner un produit</span>
+
+            </div>
+
+            <!-- Champ scanner -->
+
+            <div class="pt_scan_row">
+
+                <div class="pt_scan_input_wrapper">
+
+                    <div class="pt_scan_input_icon">
+
+                        <i class="fa fa-barcode"/>
+
+                    </div>
+
+                    <input
+                        type="text"
+                        class="pt_scan_input"
+                        placeholder="Scanner ou saisir un code-barres..."
+                        t-ref="barcodeInput"
+                        t-on-keydown="onKeyDown"
+                    />
+
+                </div>
+
+            </div>
+
+            <!-- Bouton ajout manuel -->
+
+            <div class="pt_manual_line">
+
+                <button
+                    type="button"
+                    class="btn btn-light pt_add_line_button"
+                    t-on-click="onAddLine">
+
+                    <i class="fa fa-plus-circle"/>
+
+                    <span>Ajouter une ligne</span>
+
+                </button>
+
+            </div>
 
         </div>
 

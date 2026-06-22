@@ -1,0 +1,5 @@
+<record id="group_inventory_manager" model="res.groups">
+    <field name="name">Inventory Manager</field>
+    <field name="category_id"
+           ref="base.module_category_inventory"/>
+</record>

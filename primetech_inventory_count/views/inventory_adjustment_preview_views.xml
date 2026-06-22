@@ -10,27 +10,58 @@
 
         <field name="arch" type="xml">
 
-            <list create="0"
-                  edit="0"
-                  delete="0">
+            <list
+                create="0"
+                edit="0"
+                delete="0"
+                default_order="difference desc">
 
-                <field name="product_id"/>
+                <header>
 
-                <field name="lot_id"/>
+                    <button
+                        name="action_export_from_preview"
+                        type="object"
+                        string="Envoyer vers Odoo"
+                        class="btn-primary"
+                        icon="fa-upload"/>
 
-                <field name="system_location_id"/>
+                </header>
 
-                <field name="count_location_id"/>
+                <field
+                    name="product_id"
+                    string="Produit"/>
 
-                <field name="qty_system"/>
+                <field
+                    name="lot_id"
+                    optional="show"/>
 
-                <field name="qty_counted"/>
+                <field
+                    name="system_location_id"
+                    string="Emplacement système"/>
 
-                <field name="difference"/>
+                <field
+                    name="count_location_id"
+                    string="Emplacement compté"/>
 
-                <field name="difference_type"/>
+                <field
+                    name="qty_system"
+                    string="Qté système"/>
 
-                <field name="location_difference"/>
+                <field
+                    name="qty_counted"
+                    string="Qté comptée"/>
+
+                <field
+                    name="difference"
+                    string="Écart"/>
+
+                <field
+                    name="difference_type"
+                    widget="badge"/>
+
+                <field
+                    name="location_difference"
+                    string="Écart emplacement"/>
 
             </list>
 

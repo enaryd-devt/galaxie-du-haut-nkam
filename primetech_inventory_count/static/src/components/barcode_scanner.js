@@ -29,20 +29,93 @@ export class BarcodeScanner extends Component {
 
         ev.preventDefault();
 
+        const saved =
+            await this.saveForm();
+
+        if (!saved) {
+
+            this.notification.add(
+                "Impossible d'enregistrer la feuille.",
+                {
+                    type: "danger",
+                }
+            );
+
+            return;
+        }
+
         const barcode =
-            ev.target.value.trim();
+            (ev.target.value || "").trim();
 
         if (!barcode) {
             return;
         }
 
-        const form =
-            document.querySelector(".o_form_view");
+        const path =
+            window.location.pathname;
 
-        const resId =
-            parseInt(
-                form.dataset.resId
-            );
+        console.log("PATH =", path);
+
+        let sheetId = false;
+
+        const match =
+            path.match(/\/(\d+)$/);
+
+        if (match) {
+
+            sheetId =
+                parseInt(match[1]);
+        }
+
+        console.log(
+            "SHEET ID =",
+            sheetId
+        );
+
+        console.log(
+            "SHEET ID =",
+            sheetId
+        );
+
+        console.log(
+            "BARCODE =",
+            barcode
+        );
+
+        if (!sheetId) {
+
+            try {
+
+                const saveBtn =
+                    document.querySelector(
+                        ".o_form_button_save"
+                    );
+
+                if (saveBtn) {
+
+                    saveBtn.click();
+
+                    this.notification.add(
+                        "Feuille enregistrée, rescanner le produit.",
+                        {
+                            type: "success",
+                        }
+                    );
+
+                    setTimeout(() => {
+
+                        location.reload();
+
+                    }, 1000);
+                }
+
+            } catch (error) {
+
+                console.error(error);
+            }
+
+            return;
+        }
 
         try {
 
@@ -51,43 +124,74 @@ export class BarcodeScanner extends Component {
                     "primetech.inventory.count.sheet",
                     "action_scan_barcode",
                     [
-                        [resId],
+                        [sheetId],
                         barcode
                     ]
                 );
 
-            if (!result.success) {
+            console.log(
+                "RESULT =",
+                result
+            );
 
-                this.notification.add(
-                    result.message,
-                    {
-                        type: "warning",
-                    }
-                );
+       if (!result.success) {
 
-            } else {
-
-                this.notification.add(
-                    result.product_name,
-                    {
-                        type: "success",
-                    }
-                );
-
-                location.reload();
+        this.notification.add(
+            result.message,
+            {
+                type: "warning",
             }
+        );
+
+    } else {
+
+        this.notification.add(
+            result.product_name,
+            {
+                type: "success",
+            }
+        );
+
+        const list =
+            document.querySelector(
+                ".o_field_x2many[name='line_ids']"
+            );
+
+        if (this.env.model?.root) {
+
+            await this.env.model.root.load();
+        }
+
+        setTimeout(() => {
+
+            const input =
+                document.querySelector(
+                    ".pt_barcode_input"
+                );
+
+            if (input) {
+                input.focus();
+            }
+
+        }, 300);
+    }
 
         } catch (error) {
 
-            console.error("ERREUR COMPLETE", error);
+            console.error(
+                "ERREUR COMPLETE",
+                error
+            );
 
-            if (error.data) {
-                console.error("DATA", error.data);
-            }
+            console.error(
+                "DATA",
+                error?.data
+            );
 
-            if (error.message) {
-                console.error("MESSAGE", error.message);
-            }
+            console.error(
+                "DEBUG",
+                error?.data?.debug
+            );
 
             this.notification.add(
                 "Erreur lors du scan",
@@ -104,6 +208,94 @@ export class BarcodeScanner extends Component {
             ev.target.focus();
 
         }, 100);
+    }
+
+    async onAddLine() {
+
+        const saved =
+            await this.saveForm();
+
+        if (!saved) {
+
+            this.notification.add(
+                "Impossible d'enregistrer la feuille.",
+                {
+                    type: "danger",
+                }
+            );
+
+            return;
+        }
+
+        const addButton =
+            document.querySelector(
+                ".o_field_x2many_list_row_add a"
+            );
+
+        if (!addButton) {
+
+            this.notification.add(
+                "Impossible d'ajouter une ligne.",
+                {
+                    type: "warning",
+                }
+            );
+
+            return;
+        }
+
+        addButton.click();
+
+        this.notification.add(
+            "Nouvelle ligne ajoutée",
+            {
+                type: "success",
+            }
+        );
+
+        setTimeout(() => {
+
+            const firstInput =
+                document.querySelector(
+                    ".o_list_view tbody tr:first-child input"
+                );
+
+            if (firstInput) {
+                firstInput.focus();
+            }
+
+        }, 200);
+    }
+
+    async saveForm() {
+
+        try {
+
+            const saveButton =
+                document.querySelector(
+                    ".o_form_button_save"
+                );
+
+            if (saveButton) {
+
+                saveButton.click();
+
+                await new Promise(
+                    resolve => setTimeout(
+                        resolve,
+                        800
+                    )
+                );
+            }
+
+            return true;
+
+        } catch (error) {
+
+            console.error(error);
+
+            return false;
+        }
     }
 }
 

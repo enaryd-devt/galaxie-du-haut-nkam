@@ -139,6 +139,7 @@ class InventoryCountLine(models.Model):
         string="Code-barres",
         store=True,
     )
+
     
     @api.onchange("barcode_scan")
     def _onchange_barcode_scan(self):
