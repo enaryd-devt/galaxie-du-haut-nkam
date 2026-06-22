@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!-- LISTE -->
+    <!-- ===================================================== -->
+
+    <record id="view_inventory_count_sheet_tree" model="ir.ui.view">
+        <field name="name">inventory.count.sheet.tree</field>
+        <field name="model">primetech.inventory.count.sheet</field>
+        <field name="arch" type="xml">
+
+            <list string="Feuilles de comptage">
+
+                <field name="name"/>
+                <field name="date_count"/>
+                <field name="warehouse_id"/>
+                <field
+                    name="location_id"
+                    domain="[('id','in',allowed_location_ids)]"
+                    readonly="not warehouse_id"
+                />
+
+                <field name="user_id"/>
+
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-info="state == 'draft'"
+                    decoration-warning="state in ('progress','review')"
+                    decoration-success="state in ('validated','exported')"
+                    decoration-danger="state == 'cancel'"
+                />
+
+            </list>
+
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- FORMULAIRE -->
+    <!-- ===================================================== -->
+
+    <record id="view_inventory_count_sheet_form" model="ir.ui.view">
+        <field name="name">inventory.count.sheet.form</field>
+        <field name="model">primetech.inventory.count.sheet</field>
+        <field name="arch" type="xml">
+
+            <form string="Feuille de comptage">
+
+                <header>
+
+                    <button
+                        name="action_generate_lines"
+                        type="object"
+                        string="Generer des produits"
+                        class="btn-secondary"
+                        invisible="state not in ('draft','counting')"
+                    />
+
+                    <button
+                        name="action_review"
+                        type="object"
+                        string="Passer au contrôle"
+                        class="btn-primary"
+                        invisible="state != 'counting'"
+                    />
+
+                    <button
+                        name="action_validate"
+                        type="object"
+                        string="Valider le comptage"
+                        class="btn-success"
+                        invisible="state not in ('draft','counting')"
+                    />
+
+                    <button
+                        name="action_preview_adjustments"
+                        type="object"
+                        string="Prévisualiser"
+                        class="btn-info"
+                        invisible="state == 'draft'"
+                    />
+
+                    <button
+                        name="action_export_to_odoo_inventory"
+                        type="object"
+                        string="Créer Inventaire Odoo"
+                        class="btn-success"
+                        invisible="state != 'validated'"
+                    />
+
+                    <button
+                        name="action_cancel"
+                        type="object"
+                        string="Annuler"
+                        class="btn-secondary"
+                        invisible="state in ('cancel','exported')"
+                    />
+
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,progress,review,validated,exported,cancel"
+                    />
+
+                </header>
+
+                <sheet>
+
+
+                    <!-- SMART BUTTONS -->
+
+                    <div class="oe_button_box" name="button_box">
+
+                        <button
+                            name="action_view_lines"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-list">
+                            <field name="line_count"
+                                   widget="statinfo"
+                                   string="Lignes"/>
+                        </button>
+
+                        <button
+                            name="action_view_products"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-cubes">
+                            <field name="product_count"
+                                   widget="statinfo"
+                                   string="Produits"/>
+                        </button>
+
+                        <button
+                            name="action_view_differences"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-warning">
+                            <field name="difference_count"
+                                   widget="statinfo"
+                                   string="Écarts"/>
+                        </button>
+
+                        <button
+                            name="action_view_missing"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-arrow-down">
+                            <field name="missing_count"
+                                   widget="statinfo"
+                                   string="Manquants"/>
+                        </button>
+
+                        <button
+                            name="action_view_excess"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-arrow-up">
+                            <field name="excess_count"
+                                   widget="statinfo"
+                                   string="Surplus"/>
+                        </button>
+
+                        <button
+                            name="action_view_lines"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-check">
+                            <field name="validated_line_count"
+                                   widget="statinfo"
+                                   string="Validées"/>
+                        </button>
+
+                    </div>
+
+                    <!-- TITRE -->
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- INFORMATIONS -->
+                    <group>
+
+                        <group>
+
+                            <field name="date_count"/>
+
+                            <field name="warehouse_id"/>
+
+                            <field
+                                name="location_id"
+                                domain="[('id','in',allowed_location_ids)]"
+                            />
+
+                        </group>
+
+                        <group>
+
+                            <field name="user_id" readonly="1"/>
+
+                            <field name="export_mode"/>
+
+                            <field
+                                name="validated_by"
+                                readonly="1"
+                            />
+
+                            <field
+                                name="validation_date"
+                                readonly="1"
+                            />
+
+                        </group>
+
+                    </group>
+
+                    <field name="record_id" invisible="1"/>
+                    
+
+                    <!-- ZONE SCANNER -->
+
+                    <separator string="SCAN RAPIDE PRODUIT"/>
+
+                    <group
+                        col="12"
+                        class="pt_inventory_scan_bar">
+
+                        <widget
+                            name="primetech_barcode_scanner"/>
+
+                    </group>
+
+          
+
+                    <!-- LIGNES -->
+                    <div
+                        class="alert alert-warning"
+                        invisible="location_id">
+
+                        Veuillez sélectionner un emplacement avant de saisir les lignes.
+
+                    </div>
+                    <field
+                        name="line_ids"
+                        nolabel="1"
+                        invisible="not location_id">
+                        
+
+                        <list editable="bottom" create="1">
+
+                            <field
+                                name="barcode"
+                                readonly="1"
+                                optional="show"/>
+
+                            <field name="product_id"/>
+
+                            <field
+                                name="count_location_id"
+                                domain="[('id','in',allowed_location_ids)]"
+                            />
+
+                            <field
+                                name="lot_id"
+                                context="{
+                                    'default_product_id': product_id
+                                }"
+                            />
+
+                            <field name="expiration_date"/>
+
+                            <field name="qty_system" readonly="1"/>
+
+                            <field name="qty_counted"/>
+
+                            <field name="difference"
+                                   readonly="1"/>
+
+                            <field name="difference_type"
+                                   widget="badge"/>
+
+                            
+
+                            <field name="note"/>
+
+                            <!-- Colonnes optionnelles -->
+
+                            <field name="tracking"
+                                   optional="hide"/>
+
+                            <field name="system_location_id"
+                                   optional="hide"/>
+
+                            <field name="difference_percent"
+                                   optional="hide"/>
+
+                            <field name="location_difference"
+                                   optional="hide"/>
+
+                            <field name="is_manual"
+                                   optional="hide"/>
+
+                        </list>
+
+                    </field>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

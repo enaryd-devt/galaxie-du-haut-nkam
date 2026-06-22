@@ -1,0 +1,72 @@
+/* ==========================================================
+   BARRE DE SCAN
+   ========================================================== */
+
+.pt_inventory_scan_bar {
+
+    display: flex !important;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 15px 0 20px 0;
+}
+
+.pt_inventory_scan_bar .o_field_widget {
+
+    flex: 1;
+}
+
+.pt_inventory_scan_bar input {
+
+    min-height: 52px !important;
+
+    font-size: 18px !important;
+
+    border-radius: 10px;
+
+    padding-left: 16px;
+}
+
+.pt_add_product_btn {
+
+    min-width: 180px;
+
+    min-height: 52px;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    border-radius: 10px;
+}
+
+/* ==========================================================
+   TABLETTE
+   ========================================================== */
+
+@media (max-width: 1024px) {
+
+    .pt_add_product_btn {
+
+        min-width: 160px;
+    }
+}
+
+/* ==========================================================
+   SMARTPHONE
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    .pt_inventory_scan_bar {
+
+        flex-direction: column;
+    }
+
+    .pt_add_product_btn {
+
+        width: 100%;
+    }
+}

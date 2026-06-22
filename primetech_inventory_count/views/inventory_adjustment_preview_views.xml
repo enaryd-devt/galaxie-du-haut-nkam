@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_inventory_adjustment_preview_tree"
+            model="ir.ui.view">
+
+        <field name="name">inventory.adjustment.preview.tree</field>
+
+        <field name="model">primetech.inventory.adjustment.preview</field>
+
+        <field name="arch" type="xml">
+
+            <list create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="product_id"/>
+
+                <field name="lot_id"/>
+
+                <field name="system_location_id"/>
+
+                <field name="count_location_id"/>
+
+                <field name="qty_system"/>
+
+                <field name="qty_counted"/>
+
+                <field name="difference"/>
+
+                <field name="difference_type"/>
+
+                <field name="location_difference"/>
+
+            </list>
+
+        </field>
+
+    </record>
+
+</odoo>

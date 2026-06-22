@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+
+<!-- ===================================================== -->
+<!-- ACTION FEUILLES DE COMPTAGE -->
+<!-- ===================================================== -->
+
+<record id="action_inventory_count_sheet"
+        model="ir.actions.act_window">
+
+    <field name="name">Feuilles de comptage</field>
+    <field name="res_model">primetech.inventory.count.sheet</field>
+    <field name="view_mode">list,form</field>
+
+</record>
+
+<!-- ===================================================== -->
+<!-- ACTION HISTORIQUE AJUSTEMENTS -->
+<!-- ===================================================== -->
+
+<record id="action_inventory_adjustment_log"
+        model="ir.actions.act_window">
+
+    <field name="name">Historique des ajustements</field>
+
+    <field name="res_model">primetech.inventory.adjustment.log</field>
+
+    <field name="view_mode">list,form</field>
+
+</record>
+
+<!-- ===================================================== -->
+<!-- MENU PARENT INVENTAIRE -->
+<!-- ===================================================== -->
+
+<menuitem
+    id="menu_inventory_root"
+    name="Inventaire"
+    parent="stock.menu_stock_warehouse_mgmt"
+    sequence="50"
+/>
+
+<!-- ===================================================== -->
+<!-- FEUILLES DE COMPTAGE -->
+<!-- ===================================================== -->
+
+<menuitem
+    id="menu_inventory_count_sheet"
+    name="Feuilles de comptage"
+    parent="menu_inventory_root"
+    action="action_inventory_count_sheet"
+    sequence="10"
+/>
+
+<!-- ===================================================== -->
+<!-- HISTORIQUE DES AJUSTEMENTS -->
+<!-- ===================================================== -->
+
+<menuitem
+    id="menu_inventory_adjustment_log"
+    name="Historique des ajustements"
+    parent="menu_inventory_root"
+    action="action_inventory_adjustment_log"
+    sequence="20"
+/>
+
+
+</odoo>

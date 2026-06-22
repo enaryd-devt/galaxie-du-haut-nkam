@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+
+    <t
+        t-name="primetech_inventory_count.BarcodeScanner">
+
+        <div class="pt_barcode_wrapper">
+
+            <input
+                type="text"
+                class="form-control pt_barcode_input"
+                placeholder="Scanner ou saisir un code-barres..."
+                t-ref="barcodeInput"
+                t-on-keydown="onKeyDown"
+            />
+
+        </div>
+
+    </t>
+
+</templates>

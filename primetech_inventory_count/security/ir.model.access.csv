@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_inventory_count_sheet,inventory.count.sheet,model_primetech_inventory_count_sheet,,1,1,1,1
+
+access_inventory_count_line,inventory.count.line,model_primetech_inventory_count_line,,1,1,1,1
+access_inventory_adjustment_preview,inventory.adjustment.preview,model_primetech_inventory_adjustment_preview,,1,1,1,1
+access_inventory_adjustment_log,inventory.adjustment.log,model_primetech_inventory_adjustment_log,,1,1,1,1
