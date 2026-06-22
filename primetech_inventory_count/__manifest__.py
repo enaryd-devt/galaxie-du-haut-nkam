@@ -24,7 +24,7 @@
     'assets': {
         'web.assets_backend': [
 
-            'primetech_inventory_count/static/src/js/*.js',
+          
             'primetech_inventory_count/static/src/components/*.js',
             'primetech_inventory_count/static/src/components/*.xml',
             'primetech_inventory_count/static/src/scss/*.scss',
