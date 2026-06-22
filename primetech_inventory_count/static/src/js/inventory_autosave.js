@@ -6,27 +6,76 @@ import { patch } from "@web/core/utils/patch";
 patch(FormController.prototype, {
 
     setup() {
+
         super.setup(...arguments);
 
-        this._inventoryAutoSave = setInterval(() => {
+        const isInventoryCountSheet =
 
-            if (
-                this.model &&
-                this.model.root &&
-                this.model.root.isDirty
-            ) {
+            this.props?.resModel ===
+                "primetech.inventory.count.sheet"
 
-                this.model.root.save();
+            &&
 
-            }
+            this.props?.viewType ===
+                "form";
 
-        }, 60000);
+        if (!isInventoryCountSheet) {
+            return;
+        }
+
+        console.log(
+            "PrimeTech Inventory AutoSave activé"
+        );
+
+        this._inventoryAutoSave = setInterval(
+            async () => {
+
+                try {
+
+                    const root =
+                        this.model?.root;
+
+                    if (!root) {
+                        return;
+                    }
+
+                    // Pas encore enregistré
+                    if (!root.resId) {
+                        return;
+                    }
+
+                    // Rien à sauvegarder
+                    if (!root.isDirty) {
+                        return;
+                    }
+
+                    await root.save();
+
+                    console.log(
+                        "Sauvegarde automatique OK",
+                        root.resId
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Erreur AutoSave",
+                        error
+                    );
+                }
+
+            },
+            60000
+        );
     },
 
     willUnmount() {
 
         if (this._inventoryAutoSave) {
-            clearInterval(this._inventoryAutoSave);
+
+            clearInterval(
+                this._inventoryAutoSave
+            );
         }
 
         super.willUnmount();
