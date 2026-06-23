@@ -63,12 +63,11 @@ class InventoryCountSheet(models.Model):
 
     state = fields.Selection(
         [
-            ("draft", "Brouillon"),
-            ("counting", "Comptage"),
+            ("draft", "Préparation"),
+            ("counting", "Inventaire en cours"),
             ("review", "Contrôle"),
             ("validated", "Validé"),
             ("exported", "Exporté"),
-            ("done", "Appliqué"),
             ("cancel", "Annulé"),
         ],
         string="Statut",
@@ -164,6 +163,41 @@ class InventoryCountSheet(models.Model):
     is_locked = fields.Boolean(
         compute="_compute_is_locked"
     )
+
+    @api.onchange("warehouse_id")
+    def _onchange_warehouse_id(self):
+
+        if self.state != "draft":
+            return
+
+        self.location_id = False
+
+        self.line_ids = [(5, 0, 0)]
+
+
+
+    def action_start_inventory(self):
+
+        self.ensure_one()
+
+        if not self.warehouse_id:
+            raise UserError(
+                "Veuillez sélectionner un entrepôt."
+            )
+
+        if not self.location_id:
+            raise UserError(
+                "Veuillez sélectionner un emplacement."
+            )
+
+        self.write({
+            "state": "counting",
+        })
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "reload",
+        }
 
     @api.depends("state")
     def _compute_is_locked(self):
@@ -266,18 +300,14 @@ class InventoryCountSheet(models.Model):
         }
     
     
-    @api.onchange("warehouse_id")
-    def _onchange_warehouse_id(self):
+    @api.onchange("location_id")
+    def _onchange_location_id(self):
 
-        for sheet in self:
+        if self.state != "draft":
+            return
 
-            sheet.location_id = False
-
-                # On vide les lignes uniquement
-                # si l'utilisateur change réellement d'entrepôt
-
-            if sheet.line_ids:
-                    sheet.line_ids = [(5, 0, 0)]
+        self.line_ids = [(5, 0, 0)]
+        
 
     @api.depends("warehouse_id")
     def _compute_allowed_locations(self):

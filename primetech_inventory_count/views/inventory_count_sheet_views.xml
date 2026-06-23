@@ -111,7 +111,7 @@
                         icon="fa-undo"
                         class="btn-warning"
                         groups="primetech_inventory_count.group_inventory_manager"
-                        invisible="state not in ('review','validated','exported','cancel')"
+                        invisible="state != 'exported'"
                     />
 
                     <field
@@ -205,16 +205,43 @@
                     <group>
 
                         <group>
+        
+                
+                            <group col="12">
 
-                            <field name="date_count" readonly="is_locked"/>
+                                <field
+                                    name="date_count"
+                                    string="Date de comptage"
+                                    readonly="state != 'draft'"
+                                />
 
-                            <field name="warehouse_id" readonly="is_locked"/>
+                                <field
+                                    name="warehouse_id"
+                                    string="Entrepôt"
+                                    readonly="state != 'draft'"
+                                />
 
-                            <field
-                                name="location_id"
-                                domain="[('id','in',allowed_location_ids)]"
-                                readonly="is_locked"/>
-                            
+                                <field
+                                    name="location_id"
+                                    domain="[('id','in',allowed_location_ids)]"
+                                    readonly="state != 'draft'"
+                                    class="col-10"
+                                />
+
+                                <button
+                                    name="action_start_inventory"
+                                    type="object"
+                                    icon="fa-play"
+                                    string="Démarrer"
+                                    class="btn btn-primary"
+                                    invisible="
+                                        not warehouse_id
+                                        or not location_id
+                                        or state != 'draft'
+                                    "
+                                />
+
+                            </group>
 
                         </group>
 
@@ -234,6 +261,7 @@
                                 name="validation_date"
                                 readonly="1"
                             />
+            
 
                         </group>
 
@@ -244,38 +272,38 @@
 
                     <!-- ZONE SCANNER -->
 
-                    <separator
-                        string="SCAN RAPIDE PRODUIT"
-                        invisible="not location_id or state in ('validated','exported','cancel')"
-                    />
-
                     <group
                         col="12"
                         class="pt_inventory_scan_bar"
-                        invisible="not location_id or state in ('validated','exported','cancel')">
+                        invisible="state != 'counting'">
 
                         <widget name="primetech_barcode_scanner"/>
 
                     </group>
 
+
           
 
                     <!-- LIGNES -->
                     <div
-                        class="alert alert-warning"
-                        invisible="location_id">
+                        class="alert alert-info"
+                        invisible="state != 'draft'">
 
-                        Veuillez sélectionner un emplacement avant de saisir les lignes.
+                        Sélectionnez un entrepôt et un emplacement principal puis cliquez sur
+                        <b>Démarrer l'inventaire</b>.
 
                     </div>
                     <field
                         name="line_ids"
                         nolabel="1"
-                        invisible="not location_id"
+                        invisible="state not in ('counting','review','validated','exported')"
                         readonly="is_locked">
                         
 
-                        <list editable="top" create="not is_locked">
+                        <list
+                            editable="top"
+                            create="state not in ('validated','exported','cancel')"
+                            delete="state not in ('validated','exported','cancel')">
 
                             <field
                                 name="barcode"
