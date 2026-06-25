@@ -117,8 +117,7 @@
                     <field
                         name="state"
                         widget="statusbar"
-                        statusbar_visible="draft,counting,review,validated,exported,cancel"
-
+                        statusbar_visible="draft,counting,review,validated,exported"
                     />
 
                 </header>
@@ -290,7 +289,7 @@
                         invisible="state != 'draft'">
 
                         Sélectionnez un entrepôt et un emplacement principal puis cliquez sur
-                        <b>Démarrer l'inventaire</b>.
+                        <b>Démarrer</b>.
 
                     </div>
                     <field
@@ -324,7 +323,10 @@
                                 }"
                             />
 
-                            <field name="expiration_date"/>
+                            <field
+                                name="expiration_date"
+                                readonly="not lot_id"
+                            />
 
                             <field name="qty_system" readonly="1"/>
 

@@ -201,3 +201,146 @@
         min-width: auto;
     }
 }
+/* ==========================================================
+   CARTE
+   ========================================================== */
+
+.pt_scan_card {
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 16px;
+
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+
+    transition: all .25s ease;
+}
+
+.pt_scan_card:hover {
+
+    box-shadow: 0 10px 28px rgba(13,110,253,.08);
+
+    border-color: #c9defd;
+}
+
+/* ==========================================================
+   CHAMP SCANNER
+   ========================================================== */
+
+.pt_scan_input_wrapper {
+
+    position: relative;
+
+    transition: all .25s ease;
+}
+
+.pt_scan_input_wrapper:hover {
+
+    transform: translateY(-1px);
+}
+
+.pt_scan_input_wrapper:focus-within {
+
+    transform: translateY(-2px);
+}
+
+.pt_scan_input {
+
+    transition:
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background .25s ease,
+        transform .15s ease;
+}
+
+.pt_scan_input:hover {
+
+    border-color: #0d6efd !important;
+
+    background: #fcfdff !important;
+}
+
+.pt_scan_input:focus {
+
+    border-color: #0d6efd !important;
+
+    box-shadow: 0 0 0 4px rgba(13,110,253,.15) !important;
+
+    background: #ffffff !important;
+}
+
+/* Effet lorsqu'on clique */
+
+.pt_scan_input:active {
+
+    transform: scale(.995);
+}
+
+/* ==========================================================
+   ICONE
+   ========================================================== */
+
+.pt_scan_input_icon {
+
+    transition:
+        all .25s ease;
+}
+
+.pt_scan_input_wrapper:hover .pt_scan_input_icon {
+
+    background: #dbeafe;
+
+    color: #0b5ed7;
+
+    transform: translateY(-50%) scale(1.08);
+}
+
+.pt_scan_input_wrapper:focus-within .pt_scan_input_icon {
+
+    background: #0d6efd;
+
+    color: white;
+
+    box-shadow: 0 4px 15px rgba(13,110,253,.25);
+
+    transform: translateY(-50%) scale(1.08);
+}
+
+/* ==========================================================
+   BOUTON
+   ========================================================== */
+
+.pt_add_line_button {
+
+    transition:
+        all .25s ease;
+}
+
+.pt_add_line_button:hover {
+
+    background: #0d6efd !important;
+
+    color: #fff !important;
+
+    border-color: #0d6efd !important;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 20px rgba(13,110,253,.20);
+}
+
+.pt_add_line_button:hover i {
+
+    color: white;
+}
+
+.pt_add_line_button:active {
+
+    transform: scale(.97);
+
+    box-shadow: none;
+}

@@ -832,14 +832,22 @@ class InventoryCountSheet(models.Model):
 
     def unlink(self):
 
-        for rec in self:
+        for sheet in self:
 
-            if rec.state in (
-                "validated",
-                "Sent",
+            if (
+                sheet.state in (
+                    "review",
+                    "validated",
+                    "exported",
+                    "cancel",
+                )
+                and not self.env.user.has_group(
+                    "primetech_inventory_count.group_inventory_manager"
+                )
             ):
+
                 raise UserError(
-                    "Impossible de supprimer une feuille validée."
+                    "Vous ne pouvez pas supprimer une feuille d'inventaire qui est en contrôle, validée, exportée ou annulée."
                 )
 
         return super().unlink()

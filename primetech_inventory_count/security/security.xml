@@ -1,5 +1,71 @@
-<record id="group_inventory_manager" model="res.groups">
-    <field name="name">Inventory Manager</field>
-    <field name="category_id"
-           ref="base.module_category_inventory"/>
-</record>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================= -->
+    <!-- Catégorie -->
+    <!-- ========================================= -->
+
+    <record id="module_category_primetech_inventory"
+            model="ir.module.category">
+
+        <field name="name">PrimeTech Inventory</field>
+
+        <field name="sequence">20</field>
+
+    </record>
+
+    <!-- ========================================= -->
+    <!-- Utilisateur -->
+    <!-- ========================================= -->
+
+    <record id="group_inventory_user"
+            model="res.groups">
+
+        <field name="name">
+            Inventaire - Utilisateur
+        </field>
+
+        <field name="category_id"
+               ref="primetech_inventory_count.module_category_primetech_inventory"/>
+
+    </record>
+
+    <!-- ========================================= -->
+    <!-- Responsable -->
+    <!-- ========================================= -->
+
+    <record id="group_inventory_manager"
+            model="res.groups">
+
+        <field name="name">
+            Inventaire - Responsable
+        </field>
+
+        <field name="category_id"
+               ref="primetech_inventory_count.module_category_primetech_inventory"/>
+
+        <field name="implied_ids"
+               eval="[(4, ref('primetech_inventory_count.group_inventory_user'))]"/>
+
+    </record>
+
+    <!-- ========================================= -->
+    <!-- Administrateur -->
+    <!-- ========================================= -->
+
+    <record id="group_inventory_admin"
+            model="res.groups">
+
+        <field name="name">
+            Inventaire - Administrateur
+        </field>
+
+        <field name="category_id"
+               ref="primetech_inventory_count.module_category_primetech_inventory"/>
+
+        <field name="implied_ids"
+               eval="[(4, ref('primetech_inventory_count.group_inventory_manager'))]"/>
+
+    </record>
+
+</odoo>
