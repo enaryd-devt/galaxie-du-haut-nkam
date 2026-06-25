@@ -110,7 +110,6 @@
                         string="Remettre en brouillon"
                         icon="fa-undo"
                         class="btn-warning"
-                        groups="primetech_inventory_count.group_inventory_manager"
                         invisible="state != 'exported'"
                     />
 
@@ -310,6 +309,14 @@
                                 optional="show"/>
 
                             <field name="product_id"/>
+                            
+                            <button
+                                name="action_open_product"
+                                type="object"
+                                icon="fa-eye"
+                                class="btn btn-link text-primary"
+                                title="Consulter la fiche article"
+                            />
 
                             <field
                                 name="count_location_id"

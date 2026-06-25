@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_search" model="ir.ui.view">
+        <field name="name">association.meeting.search</field>
+        <field name="model">association.meeting</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <field name="meeting_type"/>
+
+                <filter string="Draft"
+                    domain="[('state','=','draft')]"/>
+
+                <filter string="Planned"
+                    domain="[('state','=','planned')]"/>
+
+                <filter string="Completed"
+                    domain="[('state','=','done')]"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_meeting_tree" model="ir.ui.view">
+        <field name="name">association.meeting.tree</field>
+        <field name="model">association.meeting</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="meeting_type"/>
+
+                <field name="meeting_date"/>
+
+                <field name="location"/>
+
+                <field name="state" widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_meeting_form" model="ir.ui.view">
+        <field name="name">association.meeting.form</field>
+        <field name="model">association.meeting</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field
+                        name="state"
+                        widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="meeting_type"/>
+
+                            <field name="organizer_id"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="meeting_date"/>
+
+                            <field name="start_time"/>
+
+                            <field name="end_time"/>
+
+                            <field name="location"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="Attendance">
+
+                            <field name="attendance_ids"/>
+
+                        </page>
+
+                        <page string="Notes">
+
+                            <field name="note"/>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+
+    </record>
+
+</odoo>

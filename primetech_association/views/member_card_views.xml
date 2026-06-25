@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_member_card_search" model="ir.ui.view">
+        <field name="name">association.card.search</field>
+        <field name="model">association.card</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_member_card_tree" model="ir.ui.view">
+        <field name="name">association.card.tree</field>
+        <field name="model">association.card</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+                <field name="issue_date"/>
+
+                <field name="expiry_date"/>
+
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_member_card_form" model="ir.ui.view">
+        <field name="name">association.card.form</field>
+        <field name="model">association.card</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field name="state"
+                           widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="member_id"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="issue_date"/>
+
+                            <field name="expiry_date"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="QR Code">
+
+                            <field name="qr_code"/>
+
+                        </page>
+
+                        <page string="Notes">
+
+                            <field name="note"/>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

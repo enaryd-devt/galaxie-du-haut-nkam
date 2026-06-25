@@ -1,0 +1,9 @@
+<record id="view_association_member_search" model="ir.ui.view">
+    <field name="name">association.member.search</field>
+    <field name="model">association.member</field>
+    <field name="arch" type="xml">
+        <search>
+            <field name="name"/>
+        </search>
+    </field>
+</record>

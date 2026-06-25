@@ -1,0 +1,13 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    PrimeTech Association Management
+#    Wizards
+#
+##############################################################################
+
+from . import payment_wizard
+from . import member_card_wizard
+from . import attendance_wizard
+from . import penalty_wizard
+from . import financial_report_wizard

@@ -140,6 +140,18 @@ class InventoryCountLine(models.Model):
         store=True,
     )
 
+    def action_open_product(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Produit",
+            "res_model": "product.product",
+            "res_id": self.product_id.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
     
     @api.onchange("barcode_scan")
     def _onchange_barcode_scan(self):

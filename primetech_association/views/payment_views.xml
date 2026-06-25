@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_payment_search" model="ir.ui.view">
+        <field name="name">association.payment.search</field>
+        <field name="model">association.payment</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+                <filter string="Draft"
+                    domain="[('state','=','draft')]"/>
+
+                <filter string="Confirmed"
+                    domain="[('state','=','confirmed')]"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_payment_tree" model="ir.ui.view">
+        <field name="name">association.payment.tree</field>
+        <field name="model">association.payment</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+                <field name="payment_date"/>
+
+                <field name="amount"/>
+
+                <field name="payment_method"/>
+
+                <field name="state" widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_payment_form" model="ir.ui.view">
+        <field name="name">association.payment.form</field>
+        <field name="model">association.payment</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field
+                        name="state"
+                        widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="member_id"/>
+
+                            <field name="subscription_id"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="payment_date"/>
+
+                            <field name="payment_method"/>
+
+                            <field name="amount"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="Payment Lines">
+
+                            <field name="line_ids"/>
+
+                        </page>
+
+                        <page string="Notes">
+
+                            <field name="note"/>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+
+    </record>
+
+</odoo>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_penalty_search" model="ir.ui.view">
+        <field name="name">association.penalty.search</field>
+        <field name="model">association.penalty</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_penalty_tree" model="ir.ui.view">
+        <field name="name">association.penalty.tree</field>
+        <field name="model">association.penalty</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="member_id"/>
+
+                <field name="penalty_date"/>
+
+                <field name="penalty_type"/>
+
+                <field name="amount"/>
+
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_penalty_form" model="ir.ui.view">
+        <field name="name">association.penalty.form</field>
+        <field name="model">association.penalty</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field name="state"
+                           widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="member_id"/>
+
+                            <field name="penalty_type"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="penalty_date"/>
+
+                            <field name="amount"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="Notes">
+
+                            <field name="note"/>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

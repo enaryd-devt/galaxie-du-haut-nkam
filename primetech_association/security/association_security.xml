@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- MODULE CATEGORY                                             -->
+    <!-- ========================================================== -->
+
+    <record id="module_category_association" model="ir.module.category">
+        <field name="name">Association Management</field>
+        <field name="description">
+            Manage associations, members, meetings and finances.
+        </field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- USER (DOIT ÊTRE CRÉÉ EN PREMIER)                            -->
+    <!-- ========================================================== -->
+
+    <record id="group_association_user" model="res.groups">
+        <field name="name">Association User</field>
+        <field name="category_id" ref="module_category_association"/>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- MANAGER                                                     -->
+    <!-- ========================================================== -->
+
+    <record id="group_association_manager" model="res.groups">
+        <field name="name">Association Manager</field>
+        <field name="category_id" ref="module_category_association"/>
+        <field name="implied_ids"
+               eval="[(4, ref('group_association_user'))]"/>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- ADMIN                                                       -->
+    <!-- ========================================================== -->
+
+    <record id="group_association_admin" model="res.groups">
+        <field name="name">Association Administrator</field>
+        <field name="category_id" ref="module_category_association"/>
+        <field name="implied_ids"
+               eval="[(4, ref('group_association_manager'))]"/>
+    </record>
+
+</odoo>

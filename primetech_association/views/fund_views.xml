@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_income_search" model="ir.ui.view">
+        <field name="name">association.income.search</field>
+        <field name="model">association.income</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <field name="source"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_income_tree" model="ir.ui.view">
+        <field name="name">association.income.tree</field>
+        <field name="model">association.income</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="income_date"/>
+
+                <field name="source"/>
+
+                <field name="amount"/>
+
+                <field name="state"
+                       widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_income_form" model="ir.ui.view">
+        <field name="name">association.income.form</field>
+        <field name="model">association.income</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field name="state"
+                           widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <field name="name"/>
+
+                        <field name="income_date"/>
+
+                        <field name="source"/>
+
+                        <field name="amount"/>
+
+                    </group>
+
+                    <field name="note"/>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- ROOT MENU                                                 -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_association_root"
+        name="Gestion des Associations"
+        sequence="10"
+        web_icon="primetech_association,static/description/icon.png"
+        groups="primetech_association.group_association_user"/>
+
+    <!-- ========================================================= -->
+    <!-- DASHBOARD                                                 -->
+    <!-- ========================================================= -->
+
+    <record id="action_association_dashboard" model="ir.actions.act_window">
+        <field name="name">Tableau de bord</field>
+        <field name="res_model">association.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_dashboard"
+        name="Tableau de bord"
+        parent="menu_association_root"
+        action="action_association_dashboard"
+        sequence="1"/>
+
+    <!-- ========================================================= -->
+    <!-- MEMBERS                                                   -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_members_root"
+        name="Membres"
+        parent="menu_association_root"
+        sequence="100"/>
+
+    <record id="action_association_member" model="ir.actions.act_window">
+        <field name="name">Membres</field>
+        <field name="res_model">association.member</field>
+        <field name="view_mode">list,form,kanban</field>
+    </record>
+
+    <menuitem
+        id="menu_members"
+        name="Membres"
+        parent="menu_members_root"
+        action="action_association_member"
+        sequence="110"/>
+
+    <record id="action_association_card" model="ir.actions.act_window">
+        <field name="name">Cartes de membre</field>
+        <field name="res_model">association.card</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_member_cards"
+        name="Cartes"
+        parent="menu_members_root"
+        action="action_association_card"
+        sequence="120"/>
+
+    <record id="action_member_category" model="ir.actions.act_window">
+        <field name="name">Catégories</field>
+        <field name="res_model">association.member.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_member_categories"
+        name="Catégories"
+        parent="menu_members_root"
+        action="action_member_category"
+        sequence="130"/>
+
+    <record id="action_member_function" model="ir.actions.act_window">
+        <field name="name">Fonctions</field>
+        <field name="res_model">association.member.function</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_member_functions"
+        name="Fonctions"
+        parent="menu_members_root"
+        action="action_member_function"
+        sequence="140"/>
+
+    <!-- ========================================================= -->
+    <!-- EXECUTIVE COMMITTEE                                       -->
+    <!-- ========================================================= -->
+
+    <record id="action_committee" model="ir.actions.act_window">
+        <field name="name">Bureau Exécutif</field>
+        <field name="res_model">association.committee</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_committee"
+        name="Bureau Exécutif"
+        parent="menu_association_root"
+        action="action_committee"
+        sequence="200"/>
+
+    <!-- ========================================================= -->
+    <!-- FINANCE                                                   -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_finance_root"
+        name="Finances"
+        parent="menu_association_root"
+        sequence="300"/>
+
+    <record id="action_subscription" model="ir.actions.act_window">
+        <field name="name">Cotisations</field>
+        <field name="res_model">association.subscription</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_subscription"
+        name="Cotisations"
+        parent="menu_finance_root"
+        action="action_subscription"
+        sequence="310"/>
+
+    <record id="action_payment" model="ir.actions.act_window">
+        <field name="name">Paiements</field>
+        <field name="res_model">association.payment</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_payment"
+        name="Paiements"
+        parent="menu_finance_root"
+        action="action_payment"
+        sequence="320"/>
+
+    <record id="action_donation" model="ir.actions.act_window">
+        <field name="name">Dons</field>
+        <field name="res_model">association.donation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_donation"
+        name="Dons"
+        parent="menu_finance_root"
+        action="action_donation"
+        sequence="330"/>
+
+    <record id="action_expense" model="ir.actions.act_window">
+        <field name="name">Dépenses</field>
+        <field name="res_model">association.expense</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_expense"
+        name="Dépenses"
+        parent="menu_finance_root"
+        action="action_expense"
+        sequence="340"/>
+
+    <record id="action_income" model="ir.actions.act_window">
+        <field name="name">Recettes</field>
+        <field name="res_model">association.income</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_income"
+        name="Recettes"
+        parent="menu_finance_root"
+        action="action_income"
+        sequence="350"/>
+
+    <record id="action_fund" model="ir.actions.act_window">
+        <field name="name">Fonds</field>
+        <field name="res_model">association.fund</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_fund"
+        name="Fonds"
+        parent="menu_finance_root"
+        action="action_fund"
+        sequence="360"/>
+
+    <!-- ========================================================= -->
+    <!-- ACTIVITIES                                                -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_activity_root"
+        name="Activités"
+        parent="menu_association_root"
+        sequence="400"/>
+
+    <record id="action_meeting" model="ir.actions.act_window">
+        <field name="name">Réunions</field>
+        <field name="res_model">association.meeting</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_meeting"
+        name="Réunions"
+        parent="menu_activity_root"
+        action="action_meeting"
+        sequence="410"/>
+
+    <record id="action_attendance" model="ir.actions.act_window">
+        <field name="name">Présences</field>
+        <field name="res_model">association.meeting.attendance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_attendance"
+        name="Présences"
+        parent="menu_activity_root"
+        action="action_attendance"
+        sequence="420"/>
+
+    <!-- ========================================================= -->
+    <!-- DISCIPLINE                                                -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_discipline_root"
+        name="Discipline"
+        parent="menu_association_root"
+        sequence="500"/>
+
+    <record id="action_penalty" model="ir.actions.act_window">
+        <field name="name">Sanctions</field>
+        <field name="res_model">association.penalty</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_penalty"
+        name="Sanctions"
+        parent="menu_discipline_root"
+        action="action_penalty"
+        sequence="510"/>
+
+    <!-- ========================================================= -->
+    <!-- REPORTS                                                   -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_reports_root"
+        name="Rapports"
+        parent="menu_association_root"
+        sequence="600"/>
+
+    <!-- ========================================================= -->
+    <!-- CONFIGURATION                                             -->
+    <!-- ========================================================= -->
+
+    <menuitem
+        id="menu_configuration_root"
+        name="Configuration"
+        parent="menu_association_root"
+        sequence="700"
+        groups="primetech_association.group_association_admin"/>
+
+</odoo>

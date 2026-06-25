@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_subscription_search" model="ir.ui.view">
+        <field name="name">association.subscription.search</field>
+        <field name="model">association.subscription</field>
+        <field name="arch" type="xml">
+
+            <search>
+
+                <field name="name"/>
+
+                <filter string="Draft"
+                    domain="[('state','=','draft')]"/>
+
+                <filter string="Running"
+                    domain="[('state','=','running')]"/>
+
+                <filter string="Closed"
+                    domain="[('state','=','closed')]"/>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="view_subscription_tree" model="ir.ui.view">
+        <field name="name">association.subscription.tree</field>
+        <field name="model">association.subscription</field>
+        <field name="arch" type="xml">
+
+            <list>
+
+                <field name="name"/>
+
+                <field name="subscription_type"/>
+
+                <field name="date"/>
+
+                <field name="due_date"/>
+
+                <field name="amount"/>
+
+                <field name="state" widget="badge"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_subscription_form" model="ir.ui.view">
+        <field name="name">association.subscription.form</field>
+        <field name="model">association.subscription</field>
+        <field name="arch" type="xml">
+
+            <form>
+
+                <header>
+
+                    <field
+                        name="state"
+                        widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="subscription_type"/>
+
+                            <field name="amount"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="date"/>
+
+                            <field name="due_date"/>
+
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <page string="Subscription Lines">
+
+                            <field name="line_ids"/>
+
+                        </page>
+
+                        <page string="Notes">
+
+                            <field name="note"/>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>
