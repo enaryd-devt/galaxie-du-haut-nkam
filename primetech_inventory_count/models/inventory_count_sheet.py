@@ -550,13 +550,223 @@ class InventoryCountSheet(models.Model):
         return True
 
 
+    def _prepare_product_tracking(self, product):
+        """
+        Active automatiquement le suivi par lot
+        et la gestion des dates de péremption.
+        """
 
+        vals = {}
+
+        if product.tracking != "lot":
+            vals["tracking"] = "lot"
+
+        if (
+            "use_expiration_date" in product._fields
+            and not product.use_expiration_date
+        ):
+            vals["use_expiration_date"] = True
+
+        if vals:
+            product.write(vals)
+
+        return product
+    
+    def _generate_unique_lot_name(
+        self,
+        lot_name,
+        product,
+    ):
+        """
+        Génère un nom de lot unique si un lot du même nom
+        existe déjà pour un autre produit.
+        """
+
+        Lot = self.env["stock.lot"]
+
+        conflict = Lot.search([
+            ("name", "=", lot_name),
+            ("product_id", "!=", product.id),
+            ("company_id", "=", self.env.company.id),
+        ], limit=1)
+
+        if not conflict:
+            return lot_name
+
+        suffix = (
+            product.default_code
+            or product.barcode
+            or f"P{product.id}"
+        )
+
+        return f"{lot_name}-{suffix}"
+    
+    def _get_or_create_lot(
+    self,
+    product,
+    lot,
+    expiration_date=False,
+):
+        """
+        Recherche ou crée un lot.
+
+        Règles :
+
+        - Même produit + même nom de lot
+            -> réutilisation
+
+        - Produit différent + même nom de lot
+            -> renommage automatique
+
+        - Les dates de péremption sont simplement
+        mises à jour si elles sont absentes.
+        """
+
+        if not lot:
+            return False
+
+        self._prepare_product_tracking(product)
+
+        Lot = self.env["stock.lot"]
+
+        lot_name = lot.name.strip()
+
+        # =====================================================
+        # 1. Le lot existe déjà pour CE produit
+        # =====================================================
+
+        existing = Lot.search(
+            [
+                ("name", "=", lot_name),
+                ("product_id", "=", product.id),
+                ("company_id", "in", [False, self.env.company.id]),
+            ],
+            limit=1,
+        )
+
+        if existing:
+
+            vals = {}
+
+            if expiration_date:
+
+                if (
+                    "expiration_date" in existing._fields
+                    and not existing.expiration_date
+                ):
+                    vals["expiration_date"] = expiration_date
+
+                if (
+                    "life_date" in existing._fields
+                    and not existing.life_date
+                ):
+                    vals["life_date"] = expiration_date
+
+                if (
+                    "use_date" in existing._fields
+                    and not existing.use_date
+                ):
+                    vals["use_date"] = expiration_date
+
+                if (
+                    "alert_date" in existing._fields
+                    and not existing.alert_date
+                ):
+                    vals["alert_date"] = expiration_date
+
+                if (
+                    "removal_date" in existing._fields
+                    and not existing.removal_date
+                ):
+                    vals["removal_date"] = expiration_date
+
+                if vals:
+                    existing.write(vals)
+
+            return existing
+
+        # =====================================================
+        # 2. Même nom mais AUTRE produit
+        # =====================================================
+
+        conflict = Lot.search(
+    [
+                ("name", "=", lot_name),
+                ("product_id", "!=", product.id),
+                ("company_id", "in", [False, self.env.company.id]),
+            ],
+            limit=1,
+        )
+
+        if conflict:
+
+            suffix = (
+                product.default_code
+                or product.barcode
+                or f"P{product.id}"
+            )
+
+            lot_name = f"{lot_name}#{suffix}"
+
+        # =====================================================
+        # 3. Création
+        # =====================================================
+
+        vals = {
+
+            "name": lot_name,
+
+            "product_id": product.id,
+
+            "company_id": self.env.company.id,
+
+        }
+
+        if expiration_date:
+
+            if "expiration_date" in Lot._fields:
+                vals["expiration_date"] = expiration_date
+
+            if "life_date" in Lot._fields:
+                vals["life_date"] = expiration_date
+
+            if "use_date" in Lot._fields:
+                vals["use_date"] = expiration_date
+
+            if "alert_date" in Lot._fields:
+                vals["alert_date"] = expiration_date
+
+            if "removal_date" in Lot._fields:
+                vals["removal_date"] = expiration_date
+
+        existing = Lot.search(
+            [
+                ("name", "=", vals["name"]),
+                ("product_id", "=", product.id),
+                ("company_id", "in", [False, self.env.company.id]),
+            ],
+            limit=1,
+        )
+
+        if existing:
+            return existing
+        
+        return Lot.create(vals)
+    
     def action_export_to_odoo_inventory(self):
 
-    
         self.ensure_one()
 
-        if self.state == "exported":
+        # =====================================================
+        # CONTROLES
+        # =====================================================
+
+        if self.state != "validated":
+            raise UserError(
+                "Seule une feuille validée peut être exportée."
+            )
+
+        if self.adjustment_date:
             raise UserError(
                 "Cette feuille a déjà été exportée."
             )
@@ -572,9 +782,9 @@ class InventoryCountSheet(models.Model):
 
         grouped_lines = {}
 
-        # =====================================
+        # =====================================================
         # CONSOLIDATION DES LIGNES
-        # =====================================
+        # =====================================================
 
         for line in self.line_ids:
 
@@ -588,7 +798,10 @@ class InventoryCountSheet(models.Model):
 
                 line.expiration_date or False,
 
-                line.count_location_id.id if line.count_location_id else False,
+                line.count_location_id.id
+                if line.count_location_id
+                else False,
+
             )
 
             if key not in grouped_lines:
@@ -598,211 +811,280 @@ class InventoryCountSheet(models.Model):
                     "product_id":
                         line.product_id,
 
-                    "lot_id":
+                    "barcode":
+                        line.barcode,
+
+                    "lot":
                         line.lot_id,
 
                     "expiration_date":
                         line.expiration_date,
 
-                    "location_id":
+                    "location":
                         line.count_location_id,
 
-                    "qty_counted":
+                    "qty_system":
                         0.0,
 
-                    "qty_system":
+                    "qty_counted":
                         0.0,
 
                     "lines":
                         self.env[
                             "primetech.inventory.count.line"
                         ],
-                }
 
-            grouped_lines[key]["qty_counted"] += (
-                line.qty_counted
-            )
+                }
 
             grouped_lines[key]["qty_system"] += (
                 line.qty_system
+            )
+
+            grouped_lines[key]["qty_counted"] += (
+                line.qty_counted
             )
 
             grouped_lines[key]["lines"] |= line
 
         exported_count = 0
 
-        # =====================================
-        # EXPORT CONSOLIDÉ
-        # =====================================
+        with self.env.cr.savepoint():
 
-        for data in grouped_lines.values():
+            # =====================================================
+            # EXPORT DES LIGNES CONSOLIDEES
+            # =====================================================
 
-            quant = self.env["stock.quant"].search(
-                [
-                    (
-                        "product_id",
-                        "=",
-                        data["product_id"].id
-                    ),
-                    (
-                        "location_id",
-                        "=",
-                        data["location_id"].id
-                    ),
-                    (
-                        "lot_id",
-                        "=",
-                        data["lot_id"].id
-                        if data["lot_id"]
-                        else False
-                    ),
-                    (
-                        "company_id",
-                        "=",
-                        self.env.company.id
-                    ),
-                ],
-                limit=1,
-            )
+            for data in grouped_lines.values():
 
-            if not quant:
+                product = data["product_id"]
+
+                # =============================================
+                # Gestion automatique du suivi par lot
+                # =============================================
+
+                lot = False
+
+                if data["lot"]:
+
+                    self._prepare_product_tracking(
+                        product
+                    )
+
+                    lot = self._get_or_create_lot(
+
+                        product=product,
+
+                        lot=data["lot"],
+
+                        expiration_date=data[
+                            "expiration_date"
+                        ],
+
+                    )
+
+                # =============================================
+                # Recherche du Quant
+                # =============================================
 
                 quant = self.env[
                     "stock.quant"
-                ].create({
+                ].search(
 
-                    "product_id":
-                        data["product_id"].id,
+                    [
 
-                    "location_id":
-                        data["location_id"].id,
+                        (
+                            "product_id",
+                            "=",
+                            product.id,
+                        ),
 
-                    "lot_id":
-                        data["lot_id"].id
-                        if data["lot_id"]
-                        else False,
+                        (
+                            "location_id",
+                            "=",
+                            data["location"].id,
+                        ),
 
-                    "company_id":
-                        self.env.company.id,
+                        (
+                            "lot_id",
+                            "=",
+                            lot.id if lot else False,
+                        ),
+
+                        (
+                            "company_id",
+                            "=",
+                            self.env.company.id,
+                        ),
+
+                    ],
+
+                    limit=1,
+
+                )
+
+                # =============================================
+                # Création du Quant
+                # =============================================
+
+                if not quant:
+
+                    quant = self.env[
+                        "stock.quant"
+                    ].create({
+
+                        "product_id":
+                            product.id,
+
+                        "location_id":
+                            data["location"].id,
+
+                        "lot_id":
+                            lot.id if lot else False,
+
+                        "company_id":
+                            self.env.company.id,
+
+                    })
+
+                # =============================================
+                # Préparation inventaire Odoo
+                # =============================================
+
+                quant.write({
+
+                    "inventory_quantity":
+                        data["qty_counted"],
+
+                    "inventory_quantity_set":
+                        True,
+
                 })
 
-            quant.write({
+                # =============================================
+                # Historique
+                # =============================================
 
-                "inventory_quantity":
-                    data["qty_counted"],
-
-                "inventory_quantity_set":
-                    True,
-            })
-
-            Log.create({
-
-                "sheet_id":
-                    self.id,
-
-                "product_id":
-                    data["product_id"].id,
-
-                "lot_id":
-                    data["lot_id"].id
-                    if data["lot_id"]
-                    else False,
-
-                "expiration_date":
-                    data["expiration_date"],
-
-                "warehouse_id":
-                    self.warehouse_id.id,
-
-                "location_id":
-                    data["location_id"].id,
-
-                "qty_system":
-                    data["qty_system"],
-
-                "qty_counted":
-                    data["qty_counted"],
-
-                "before_qty":
-                    data["qty_system"],
-
-                "after_qty":
-                    data["qty_counted"],
-
-                "difference":
+                difference = (
                     data["qty_counted"]
-                    - data["qty_system"],
+                    - data["qty_system"]
+                )
 
-                "difference_type":
-                    (
-                        "excess"
-                        if data["qty_counted"]
-                        > data["qty_system"]
-                        else
-                        "missing"
-                        if data["qty_counted"]
-                        < data["qty_system"]
-                        else
-                        "equal"
-                    ),
+                if difference > 0:
+                    difference_type = "excess"
+                elif difference < 0:
+                    difference_type = "missing"
+                else:
+                    difference_type = "equal"
 
-                "counted_by":
-                    self.env.user.id,
+                Log.create({
 
-                "adjustment_date":
-                    fields.Datetime.now(),
-            })
+                    "sheet_id":
+                        self.id,
 
-            data["lines"].write({
+                    "product_id":
+                        product.id,
 
-                "adjustment_applied": True,
+                    "lot_id":
+                        lot.id if lot else False,
 
-                "validated": True,
-            })
+                    "expiration_date":
+                        data["expiration_date"],
 
-            exported_count += 1
+                    "warehouse_id":
+                        self.warehouse_id.id,
 
-        self.write({
+                    "location_id":
+                        data["location"].id,
 
-            "state": "exported",
+                    "qty_system":
+                        data["qty_system"],
+
+                    "qty_counted":
+                        data["qty_counted"],
+
+                    "before_qty":
+                        data["qty_system"],
+
+                    "after_qty":
+                        data["qty_counted"],
+
+                    "difference":
+                        difference,
+
+                    "difference_type":
+                        difference_type,
+
+                    "counted_by":
+                        self.env.user.id,
+
+                    "adjustment_date":
+                        fields.Datetime.now(),
+
+                    "applied":
+                        True,
+
+                    "applied_by":
+                        self.env.user.id,
+
+                })
+
+                # =============================================
+                # Mise à jour des lignes
+                # =============================================
+
+                data["lines"].write({
+
+                    "adjustment_applied": True,
+
+                    "validated": True,
+
+                })
+
+                exported_count += 1
+
+        # =====================================================
+        # Mise à jour de la feuille
+        # =====================================================
+
+        super(type(self), self).write({
+
+            "state":
+                "exported",
 
             "adjustment_date":
                 fields.Datetime.now(),
 
             "applied_by":
                 self.env.user.id,
+
         })
 
+        # =====================================================
+        # Historique Chatter
+        # =====================================================
+
+        self.message_post(
+
+            body=f"""
+            <b>Inventaire exporté vers Odoo</b><br/>
+            <b>Utilisateur :</b> {self.env.user.display_name}<br/>
+            <b>Date :</b> {fields.Datetime.now()}<br/>
+            <b>Lignes consolidées :</b> {exported_count}
+            """
+
+        )
+
+        # =====================================================
+        # Rechargement
+        # =====================================================
+
         return {
-
-            "type":
-                "ir.actions.client",
-
-            "tag":
-                "display_notification",
-            
-            "tag": "reload",
-
-            "params": {
-
-                "title":
-                    "Export terminé",
-
-                "message":
-                    (
-                        f"{exported_count} ligne(s) "
-                        f"consolidée(s) exportée(s) "
-                        f"vers l'inventaire Odoo."
-                    ),
-
-                "type":
-                    "success",
-
-                "sticky":
-                    False,
-            },
+            "type": "ir.actions.act_window",
+            "res_model": "primetech.inventory.count.sheet",
+            "res_id": self.id,
+            "view_mode": "form",
+            "target": "current",
         }
-
 
     def action_cancel(self):
 
