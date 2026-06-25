@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="product_template_stock_dashboard"
+            model="ir.ui.view">
+
+        <field name="name">product.template.stock.dashboard</field>
+        <field name="model">product.template</field>
+
+        <field name="inherit_id"
+               ref="product.product_template_only_form_view"/>
+
+        <field name="arch" type="xml">
+
+            <field name="product_tooltip"
+                   position="after">
+
+                <div class="o_stock_dashboard"
+                     invisible="not has_stock_alerts">
+
+                    <!-- Séparation -->
+
+                    <separator string=""/>
+
+                    <!-- Titre -->
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <div>
+
+                            <span class="fa fa-cubes text-primary me-2"/>
+
+                            <strong class="fs-5">
+                                Stock par magasin / emplacement
+                            </strong>
+
+                        </div>
+
+                        <button
+                            name="action_sync_stock"
+                            type="object"
+                            string="Actualiser"
+                            icon="fa-refresh"
+                            class="oe_highlight"/>
+
+                    </div>
+
+                    <!-- Tableau -->
+
+                    <field name="stock_alert_ids"
+                           nolabel="1">
+
+                        <list
+                            create="0"
+                            delete="0"
+                            editable="bottom"
+                            decoration-success="status == 'ok'"
+                            decoration-warning="status == 'warning'"
+                            decoration-danger="status == 'alert'">
+
+                            <field name="status"
+                                   column_invisible="1"/>
+
+                            <field name="location_id"
+                                   string="Emplacement"
+                                   readonly="1"/>
+
+                            <field name="lot_id"
+                                   string="Lot"
+                                   readonly="1"/>
+
+                            <field name="expiration_date"
+                                   string="Expiration"
+                                   readonly="1"/>
+
+                            <field name="available_quantity"
+                                   string="Disponible"
+                                   readonly="1"/>
+
+                            <field name="minimum_qty"
+                                   string="Seuil d'alerte"/>
+
+                        </list>
+
+                    </field>
+
+                </div>
+
+            </field>
+
+        </field>
+
+    </record>
+
+</odoo>
