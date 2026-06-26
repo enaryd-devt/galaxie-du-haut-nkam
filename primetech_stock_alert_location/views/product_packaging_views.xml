@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="primetech_product_packaging_tree"
+            model="ir.ui.view">
+
+        <field name="name">primetech.product.packaging.tree</field>
+        <field name="model">product.packaging</field>
+
+        <field name="inherit_id"
+               ref="product.product_packaging_tree_view"/>
+
+        <field name="arch" type="xml">
+
+            <!-- ===================================================== -->
+            <!-- Colonnes PrimeTech -->
+            <!-- ===================================================== -->
+
+            <xpath expr="//field[@name='qty']" position="after">
+
+                <field name="stock_available"
+                       string="Stock"
+                       readonly="1"
+                       optional="show"
+                       class="fw-semibold"/>
+
+                <field name="equivalent_display"
+                       widget="html"
+                       string="Répartition"
+                       readonly="1"
+                       optional="show"
+                       class="fw-bold"/>
+
+            </xpath>
+
+            <!-- ===================================================== -->
+            <!-- Colonnes secondaires -->
+            <!-- ===================================================== -->
+
+            <xpath expr="//field[@name='company_id']"
+                   position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='route_ids']"
+                   position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='product_uom_id']"
+                   position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- ===================================================== -->
+            <!-- Colonnes principales -->
+            <!-- ===================================================== -->
+
+            <xpath expr="//field[@name='barcode']"
+                   position="attributes">
+                <attribute name="string">Code-barres</attribute>
+                <attribute name="class">fw-semibold</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='name']"
+                   position="attributes">
+                <attribute name="string">Conditionnement</attribute>
+                <attribute name="class">fw-semibold</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='qty']"
+                   position="attributes">
+                <attribute name="string">Qté Contenue</attribute>
+                <attribute name="class">fw-semibold</attribute>
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>

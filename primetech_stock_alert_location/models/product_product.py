@@ -1,19 +1,14 @@
+# -*- coding: utf-8 -*-
+
 from odoo import api, fields, models
 from markupsafe import Markup
 from collections import defaultdict
 
-class ProductTemplate(models.Model):
-    _inherit = "product.template"
 
-    stock_alert_ids = fields.One2many(
-        "stock.location.alert",
-        "product_tmpl_id",
-        string="Stock par emplacement",
-    )
 
-    has_stock_alerts = fields.Boolean(
-        compute="_compute_has_stock_alerts",
-    )
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
 
     packaging_summary = fields.Html(
         string="Résumé des conditionnements",
@@ -21,7 +16,6 @@ class ProductTemplate(models.Model):
         sanitize=False,
     )
 
-    
     warehouse_summary = fields.Html(
         string="Stock par magasin",
         compute="_compute_stock_summary",
@@ -33,6 +27,352 @@ class ProductTemplate(models.Model):
         compute="_compute_stock_summary",
         sanitize=False,
     )
+
+    # =====================================================
+    # TABLEAU DES STOCKS
+    # =====================================================
+
+    stock_alert_ids = fields.One2many(
+        "stock.location.alert",
+        "product_id",
+        string="Stock par emplacement",
+        copy=False,
+    )
+
+    has_stock_alerts = fields.Boolean(
+        compute="_compute_has_stock_alerts",
+    )
+
+
+    @api.depends()
+    def _compute_stock_summary(self):
+
+        Quant = self.env["stock.quant"]
+        Warehouse = self.env["stock.warehouse"]
+
+        for product in self:
+
+            quants = Quant.search([
+                ("product_id", "=", product.id),
+                ("location_id.usage", "=", "internal"),
+            ])
+
+            # =====================================================
+            # PAR MAGASIN
+            # =====================================================
+
+            warehouse_data = defaultdict(lambda: {
+                "qty": 0,
+                "reserved": 0,
+                "locations": set(),
+            })
+
+            # =====================================================
+            # PAR EMPLACEMENT
+            # =====================================================
+
+            location_rows = ""
+
+            for quant in quants:
+
+                warehouse = Warehouse.search([
+                    ("view_location_id", "parent_of", quant.location_id.id)
+                ], limit=1)
+
+                if warehouse:
+
+                    warehouse_data[warehouse.name]["qty"] += quant.quantity
+                    warehouse_data[warehouse.name]["reserved"] += quant.reserved_quantity
+                    warehouse_data[warehouse.name]["locations"].add(
+                        quant.location_id.display_name
+                    )
+
+                available = quant.quantity - quant.reserved_quantity
+
+                location_rows += f"""
+                <tr>
+
+                    <td>{quant.location_id.display_name}</td>
+
+                    <td style="text-align:center;">
+                        {quant.lot_id.name if quant.lot_id else '-'}
+                    </td>
+
+                    <td style="text-align:center;">
+                        {available:.2f}
+                    </td>
+
+                    <td style="text-align:center;">
+                        {quant.reserved_quantity:.2f}
+                    </td>
+
+                </tr>
+                """
+
+            # =====================================================
+            # TABLEAU MAGASINS
+            # =====================================================
+
+            warehouse_rows = ""
+
+            for warehouse, vals in warehouse_data.items():
+
+                available = vals["qty"] - vals["reserved"]
+
+                warehouse_rows += f"""
+                <tr>
+
+                    <td>{warehouse}</td>
+
+                    <td style="text-align:center;">
+                        {available:.2f}
+                    </td>
+
+                    <td style="text-align:center;">
+                        {vals["reserved"]:.2f}
+                    </td>
+
+                    <td style="text-align:center;">
+                        {vals["qty"]:.2f}
+                    </td>
+
+                    <td style="text-align:center;">
+                        {len(vals["locations"])}
+                    </td>
+
+                </tr>
+                """
+
+            # =====================================================
+            # HTML MAGASINS
+            # =====================================================
+
+            product.warehouse_summary = Markup(f"""
+
+            <div style="
+                border:1px solid #dee2e6;
+                border-radius:10px;
+                overflow:hidden;
+                margin-bottom:12px;
+            ">
+
+                <div style="
+                    padding:10px 15px;
+                    background:#f8f9fa;
+                    font-weight:700;">
+
+                    🏪 Stock par magasin
+
+                </div>
+
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;">
+
+                    <thead>
+
+                        <tr style="background:#fafafa;">
+
+                            <th>Magasin</th>
+
+                            <th>Disponible</th>
+
+                            <th>Réservé</th>
+
+                            <th>Total</th>
+
+                            <th>Emplacements</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {warehouse_rows}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            """)
+
+            # =====================================================
+            # HTML EMPLACEMENTS
+            # =====================================================
+
+            product.location_summary = Markup(f"""
+
+            <div style="
+                border:1px solid #dee2e6;
+                border-radius:10px;
+                overflow:hidden;
+            ">
+
+                <div style="
+                    padding:10px 15px;
+                    background:#f8f9fa;
+                    font-weight:700;">
+
+                    📍 Stock par emplacement
+
+                </div>
+
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;">
+
+                    <thead>
+
+                        <tr style="background:#fafafa;">
+
+                            <th>Emplacement</th>
+
+                            <th>Lot</th>
+
+                            <th>Disponible</th>
+
+                            <th>Réservé</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {location_rows}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            """)
+
+    
+    # =====================================================
+    # BOUTON ACTUALISER
+    # =====================================================
+
+    def action_sync_stock(self):
+
+        self._sync_stock_alerts()
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "reload",
+        }
+
+    # =====================================================
+    # SYNCHRONISATION
+    # =====================================================
+
+    def _sync_stock_alerts(self):
+
+        Alert = self.env["stock.location.alert"]
+        Quant = self.env["stock.quant"]
+
+        for product in self:
+
+            quants = Quant.search([
+                ("product_id", "=", product.id),
+                ("location_id.usage", "=", "internal"),
+                ("quantity", ">", 0),
+            ])
+
+            # Toutes les lignes existantes
+            existing_alerts = Alert.search([
+                ("product_id", "=", product.id),
+            ])
+
+            processed = self.env["stock.location.alert"]
+
+            for quant in quants:
+
+                domain = [
+                    ("product_id", "=", product.id),
+                    ("location_id", "=", quant.location_id.id),
+                ]
+
+                if quant.lot_id:
+                    domain.append(("lot_id", "=", quant.lot_id.id))
+                else:
+                    domain.append(("lot_id", "=", False))
+
+                alert = Alert.search(domain, limit=1)
+
+                values = {
+                    "product_tmpl_id": product.product_tmpl_id.id,
+                    "product_id": product.id,
+                    "location_id": quant.location_id.id,
+                    "lot_id": quant.lot_id.id or False,
+                    "quantity": quant.quantity,
+                    "reserved_quantity": quant.reserved_quantity,
+                }
+
+                if alert:
+
+                    # On met simplement les quantités à jour.
+                    # minimum_qty reste inchangé.
+                    alert.write(values)
+                    processed |= alert
+
+                else:
+
+                    new_alert = Alert.create({
+                        **values,
+                        "minimum_qty": 0,
+                    })
+
+                    processed |= new_alert
+
+            # Suppression uniquement des lignes devenues inutiles
+            (existing_alerts - processed).unlink()
+
+    # =====================================================
+    # SYNCHRONISATION AUTOMATIQUE
+    # =====================================================
+
+    def read(self, fields=None, load="_classic_read"):
+
+        res = super().read(fields=fields, load=load)
+
+        self._sync_stock_alerts()
+
+        return res
+    # =====================================================
+    # AFFICHAGE DU TABLEAU
+    # =====================================================
+
+    @api.depends("stock_alert_ids")
+    def _compute_has_stock_alerts(self):
+
+        Quant = self.env["stock.quant"]
+
+        for product in self:
+
+            product.has_stock_alerts = bool(
+
+                Quant.search_count([
+
+                    ("product_id", "=", product.id),
+
+                    ("location_id.usage", "=", "internal"),
+
+                    ("quantity", ">", 0),
+
+                ])
+
+            )
+            
+        return {
+            "type": "ir.actions.client",
+            "tag": "reload",
+        }
+    
 
     # =====================================================
     # STOCK PAR MAGASIN & EMPLACEMENT
@@ -242,48 +582,6 @@ class ProductTemplate(models.Model):
             </div>
             """)
 
-    
-    
-    # =====================================================
-    # FORMATAGE DES NOMBRES
-    # =====================================================
-
-   
-   
-    def _fmt_qty(self, value):
-
-            value = value or 0
-
-            if float(value).is_integer():
-                return f"{int(value):,}".replace(",", " ")
-
-            return (
-                f"{value:,.2f}"
-                .replace(",", " ")
-                .replace(".", ",")
-            )
-        
-
-
-    @api.depends("stock_alert_ids")
-    def _compute_has_stock_alerts(self):
-        for product in self:
-            product.has_stock_alerts = bool(product.stock_alert_ids)
-             
-
-    def action_sync_stock(self):
-        self.ensure_one()
-        return self.product_variant_id.action_sync_stock()
-
-
-
-    # =====================================================
-    # STOCK PAR MAGASIN & EMPLACEMENT
-    # =====================================================
-    @api.depends(
-        "qty_available",
-        "packaging_ids",
-    )
     @api.depends(
         "qty_available",
         "packaging_ids",
@@ -428,8 +726,10 @@ class ProductTemplate(models.Model):
                 {"".join(rows)}
 
             </div>
-            """)
+            """)      
 
 
 
 
+
+        

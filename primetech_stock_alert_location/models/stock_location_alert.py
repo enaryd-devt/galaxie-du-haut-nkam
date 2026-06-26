@@ -89,6 +89,58 @@ class StockLocationAlert(models.Model):
         compute="_compute_status",
     )
 
+    status_html = fields.Html(
+        compute="_compute_status_html",
+        sanitize=False,
+    )
+
+    @api.depends("available_quantity", "minimum_qty")
+    def _compute_status_html(self):
+
+        for rec in self:
+
+            if rec.available_quantity <= 0:
+
+                rec.status_html = """
+                <span style="
+                    background:#FDECEC;
+                    color:#C62828;
+                    padding:3px 10px;
+                    border-radius:20px;
+                    font-weight:600;
+                    font-size:12px;">
+                    ⛔ Rupture
+                </span>
+                """
+
+            elif rec.minimum_qty > 0 and rec.available_quantity <= rec.minimum_qty:
+
+                rec.status_html = """
+                <span style="
+                    background:#FFF8E1;
+                    color:#EF6C00;
+                    padding:3px 10px;
+                    border-radius:20px;
+                    font-weight:600;
+                    font-size:12px;">
+                    ⚠ Stock faible
+                </span>
+                """
+
+            else:
+
+                rec.status_html = """
+                <span style="
+                    background:#E8F5E9;
+                    color:#2E7D32;
+                    padding:3px 10px;
+                    border-radius:20px;
+                    font-weight:600;
+                    font-size:12px;">
+                    ✓ Disponible
+                </span>
+                """
+
     # =====================================================
     # Disponible
     # =====================================================

@@ -30,11 +30,16 @@ Features
         "security/ir.model.access.csv",
 
         "views/stock_location_alert_views.xml",
+        "views/product_product_views.xml",
         "views/product_template_views.xml",
+        "views/product_packaging_views.xml",
+
         "views/menus.xml",
 
         "data/ir_cron.xml",
     ],
+
+    
 
     "installable": True,
     "application": False,
