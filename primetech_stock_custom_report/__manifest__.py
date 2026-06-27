@@ -26,6 +26,7 @@
         "wizard/product_stock_move_wizard_view.xml",
 
         "views/menu_analysis.xml",
+        "views/stock_picking_views.xml",
     
 
     ],

@@ -70,6 +70,37 @@ class StockMove(models.Model):
         compute="_compute_packaging_display",
     )
 
+    packaging_qty = fields.Float(
+        string="Qté conditionnements",
+        default=1.0,
+    )
+
+    @api.onchange("packaging_qty", "product_packaging_id")
+    def _onchange_packaging_qty(self):
+
+        for move in self:
+
+            if not move.product_packaging_id:
+                continue
+
+            if move.product_packaging_id.qty <= 0:
+                continue
+
+            move.product_uom_qty = (
+                move.packaging_qty
+                * move.product_packaging_id.qty
+            )
+
+    
+    @api.onchange("product_packaging_id")
+    def _onchange_packaging(self):
+
+        for move in self:
+
+            if move.product_packaging_id:
+
+                move.product_uom = move.product_packaging_id.product_id.uom_id
+
     @api.depends(
         "product_uom_qty",
         "move_line_ids.quantity",
