@@ -24,7 +24,7 @@
                         display:flex;
                         gap:24px;
                         align-items:flex-start;
-                    ">
+                        ">
 
                         <!-- Quantité par conditionnement -->
                         <div style="

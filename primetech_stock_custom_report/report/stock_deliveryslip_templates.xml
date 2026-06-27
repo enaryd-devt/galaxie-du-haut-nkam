@@ -37,9 +37,6 @@
                 <div class="row mb-4">
 
                     <div class="col-6">
-                        <h2 class="text-primary fw-bold">
-                            <span t-field="o.company_id.name"/>
-                        </h2>
 
                         <div t-if="o.company_id.street">
                             <span t-field="o.company_id.street"/>
@@ -114,9 +111,11 @@
                             <t t-if="o.partner_id.country_id"> - <span t-field="o.partner_id.country_id"/></t>
                         </t>
 
-                        <t t-else="">
-                            <span t-field="o.location_id.name"/>
+                        <t t-if="o.location_id.warehouse_id">
+                            <span t-field="o.location_id.warehouse_id.name"/>
+                            /
                         </t>
+                        <span t-field="o.location_id.complete_name"/>
                     </div>
 
                 </div>
@@ -139,7 +138,7 @@
                             </t>
 
                             <t t-else="">
-                                <span t-field="o.location_dest_id.display_name"/>
+                                <span t-field="o.location_dest_id.complete_name"/>
                             </t>
                         </div>
                     </div>
@@ -247,104 +246,424 @@
 
                 </div>
 
-                <!-- ========================= -->
+                <!-- ========================================================= -->
                 <!-- PRODUITS -->
-                <!-- ========================= -->
-                <table class="table table-bordered">
+                <!-- ========================================================= -->
 
-                    <thead class="bg-primary">
-                        <tr style="color:white !important;">
+                <table class="table table-sm mb-0"
+                    style="
+                            width:100%;
+                            table-layout:fixed;
+                            border-collapse:collapse;
+                    ">
 
-                            <th style="color:white !important;">Produit</th>
+                    <thead>
 
-                            <th class="text-center" style="color:white !important;">
-                                Qté Cmd
+                        <tr style="
+                            background:#1F4E79;
+                            color:white;
+                        ">
+
+                            <th style="
+                                width:42%;
+                                color:white;
+                                padding:8px;
+                            ">
+                                Produit
                             </th>
 
-                            <th class="text-center" style="color:white !important;">
-                                Qté Livrée
+                            <th style="
+                                width:18%;
+                                color:white;
+                                text-align:center;
+                                padding:8px;
+                            ">
+                                Qté commandée
                             </th>
 
-                            <!-- LOT -->
+                            <th style="
+                                width:18%;
+                                color:white;
+                                text-align:center;
+                                padding:8px;
+                            ">
+                                Qté livrée
+                            </th>
+
                             <th t-if="any(o.move_line_ids.mapped('lot_id'))"
-                                class="text-center"
-                                style="color:white !important;">
+                                style="
+                                    width:12%;
+                                    color:white;
+                                    text-align:center;
+                                    padding:8px;
+                                ">
                                 Lot / Série
                             </th>
 
-                            <!-- EXP -->
                             <th t-if="any(o.move_line_ids.mapped('lot_id'))"
-                                class="text-center"
-                                style="color:white !important;">
-                                Date Exp.
-                            </th>
-
-                            <th class="text-center" style="color:white !important;">
-                                Unité
+                                style="
+                                    width:10%;
+                                    color:white;
+                                    text-align:center;
+                                    padding:8px;
+                                ">
+                                Expiration
                             </th>
 
                         </tr>
+
                     </thead>
 
                     <tbody>
 
-                        <tr t-foreach="o.move_ids" t-as="line">
+                        <tr t-foreach="o.move_ids"
+                            t-as="line"
+                            style="border-bottom:1px solid #ECECEC;">
 
                             <t t-set="ml"
                             t-value="line.move_line_ids[:1] and line.move_line_ids[0]"/>
 
-                            <td>
-                                <span t-field="line.product_id"/>
+                            <!-- ===================================== -->
+                            <!-- PRODUIT -->
+                            <!-- ===================================== -->
+
+                            <td style="
+                                padding:7px;
+                                vertical-align:top;
+                            ">
+
+                                <div style="
+                                    font-size:13px;
+                                    font-weight:600;
+                                    color:#2F3B4A;
+                                ">
+
+                                    <span t-field="line.product_id"/>
+
+                                </div>
+
+                                <div t-if="line.product_id.default_code"
+                                    style="
+                                        font-size:10px;
+                                        color:#6C757D;
+                                        margin-top:2px;
+                                    ">
+
+                                    Réf :
+
+                                    <span t-field="line.product_id.default_code"/>
+
+                                </div>
+
+                            </td>
+                                        <!-- ===================================== -->
+                            <!-- QTÉ COMMANDÉE -->
+                            <!-- ===================================== -->
+
+                            <td style="
+                                text-align:center;
+                                vertical-align:middle;
+                                padding:7px;
+                            ">
+
+                                <t t-if="line.product_packaging_id">
+
+                                    <!-- Conditionnement principal -->
+
+                                    <div style="
+                                        font-size:12px;
+                                        font-weight:700;
+                                        color:#2F3B4A;
+                                        white-space:nowrap;
+                                    ">
+
+                                        <span t-field="line.packaging_qty"/>
+
+                                        ×
+
+                                        <span t-field="line.packaging_name"/>
+
+                                    </div>
+
+                                    <!-- Reste -->
+
+                                    <t t-if="line.has_remaining">
+
+                                        <div style="
+                                            margin-top:4px;
+                                            padding-top:4px;
+                                            border-top:1px dashed #D9D9D9;
+                                            font-size:10px;
+                                            color:#6C757D;
+                                            white-space:nowrap;
+                                        ">
+
+                                            <i class="fa fa-level-down me-1"/>
+
+                                            <strong>Non conditionné</strong>
+
+                                            <br/>
+
+                                            <strong>
+
+                                                <span t-field="line.remaining_qty"/>
+
+                                                ×
+
+                                                <span t-field="line.remaining_name"/>
+
+                                            </strong>
+
+                                        </div>
+
+                                    </t>
+
+                                </t>
+
+                                <!-- Aucun conditionnement -->
+
+                                <t t-else="">
+
+                                    <div style="
+                                        font-size:12px;
+                                        font-weight:700;
+                                        color:#2F3B4A;
+                                        white-space:nowrap;
+                                    ">
+
+                                        <span t-field="line.product_uom_qty"/>
+
+                                        ×
+
+                                        <span t-field="line.product_uom"/>
+
+                                    </div>
+
+                                </t>
+
                             </td>
 
-                            <td class="text-center">
-                                <span t-field="line.product_uom_qty"/>
+                            <!-- ===================================== -->
+                            <!-- QTÉ LIVRÉE -->
+                            <!-- (suite partie 3) -->
+                            <!-- ===================================== -->
+                                        <!-- ===================================== -->
+                            <!-- QTÉ LIVRÉE -->
+                            <!-- ===================================== -->
+
+                            <td style="
+                                text-align:center;
+                                vertical-align:middle;
+                                padding:7px;
+                            ">
+
+                                <t t-if="line.product_packaging_id">
+
+                                    <!-- Conditionnement livré -->
+
+                                    <div style="
+                                        font-size:12px;
+                                        font-weight:700;
+                                        color:#198754;
+                                        white-space:nowrap;
+                                    ">
+
+                                        <span t-field="line.packaging_qty"/>
+
+                                        ×
+
+                                        <span t-field="line.packaging_name"/>
+
+                                    </div>
+
+                                    <!-- Reste -->
+
+                                    <t t-if="line.has_remaining">
+
+                                        <div style="
+                                            margin-top:4px;
+                                            padding-top:4px;
+                                            border-top:1px dashed #D9D9D9;
+                                            white-space:nowrap;
+                                        ">
+
+                                            <span style="
+                                                display:inline-block;
+                                                padding:2px 8px;
+                                                border-radius:10px;
+                                                background:#FFF3CD;
+                                                color:#856404;
+                                                font-size:9px;
+                                                font-weight:600;
+                                                margin-bottom:2px;
+                                            ">
+
+                                                Non conditionné
+
+                                            </span>
+
+                                            <br/>
+
+                                            <span style="
+                                                font-size:11px;
+                                                font-weight:700;
+                                                color:#6C757D;
+                                            ">
+
+                                                <span t-field="line.remaining_qty"/>
+
+                                                ×
+
+                                                <span t-field="line.remaining_name"/>
+
+                                            </span>
+
+                                        </div>
+
+                                    </t>
+
+                                </t>
+
+                                <t t-else="">
+
+                                    <span style="
+                                        font-size:12px;
+                                        font-weight:700;
+                                    ">
+
+                                        <span t-esc="sum(line.move_line_ids.mapped('quantity'))"/>
+
+                                        ×
+
+                                        <span t-field="line.product_uom"/>
+
+                                    </span>
+
+                                </t>
+
                             </td>
 
-                            <td class="text-center">
-                                <span t-esc="sum(line.move_line_ids.mapped('quantity'))"/>
-                            </td>
+                            <!-- ===================================== -->
+                            <!-- LOT -->
+                            <!-- ===================================== -->
 
                             <t t-if="any(o.move_ids.mapped('move_line_ids.lot_id'))">
 
-                                <!-- LOT -->
-                                <td class="text-center">
+                                <td style="
+                                    text-align:center;
+                                    vertical-align:middle;
+                                ">
 
                                     <t t-if="ml and ml.lot_id">
-                                        <span t-field="ml.lot_id.name"/>
+
+                                        <span style="
+                                            display:inline-block;
+                                            padding:4px 10px;
+                                            background:#E7F1FF;
+                                            color:#0D6EFD;
+                                            border-radius:12px;
+                                            font-size:11px;
+                                            font-weight:600;
+                                        ">
+
+                                            <i class="fa fa-barcode"
+                                            style="margin-right:4px;"/>
+
+                                            <span t-field="ml.lot_id.name"/>
+
+                                        </span>
+
                                     </t>
 
                                     <t t-else="">
-                                        -
+
+                                        <span class="text-muted">
+
+                                            —
+
+                                        </span>
+
                                     </t>
 
                                 </td>
 
-                                <!-- DATE EXP -->
-                                    <td class="text-center">
+                                <!-- ===================================== -->
+                                <!-- EXPIRATION -->
+                                <!-- ===================================== -->
 
-                                        <t t-if="ml and ml.lot_id and ml.lot_id.use_date">
+                                <td style="
+                                    text-align:center;
+                                    vertical-align:middle;
+                                ">
+
+                                    <t t-if="ml and ml.lot_id and ml.lot_id.use_date">
+
+                                        <span style="
+                                            color:#DC3545;
+                                            font-weight:600;
+                                            font-size:11px;
+                                        ">
+
+                                            <i class="fa fa-calendar"
+                                            style="margin-right:4px;"/>
+
                                             <span t-field="ml.lot_id.use_date"
-                                                t-options='{"format": "dd/MM/yyyy"}'/>
-                                        </t>
+                                                t-options='{"format":"dd/MM/yyyy"}'/>
 
-                                        <t t-else="">
-                                            -
-                                        </t>
+                                        </span>
 
-                                    </td>
+                                    </t>
+
+                                    <t t-else="">
+
+                                        <span class="text-muted">
+
+                                            —
+
+                                        </span>
+
+                                    </t>
+
+                                </td>
 
                             </t>
 
-                            <td class="text-center">
-                                <span t-field="line.product_uom"/>
-                            </td>
-
                         </tr>
+                                </tbody>
 
-                    </tbody>
+                    </table>
 
-                </table>
+                    <!-- ============================================= -->
+                    <!-- STYLE PREMIUM -->
+                    <!-- ============================================= -->
+
+                    <style>
+
+                        table.table-sm tbody tr:nth-child(even){
+                            background:#FCFCFC;
+                        }
+
+                        table.table-sm tbody tr:hover{
+                            background:#F7FAFD;
+                        }
+
+                        table.table-sm td{
+                            padding-top:7px;
+                            padding-bottom:7px;
+                        }
+
+                        table.table-sm th{
+                            font-size:12px;
+                            font-weight:700;
+                        }
+
+                        table.table-sm td{
+                            font-size:11px;
+                        }
+
+                    </style>
+
+
 
                 <!-- ========================= -->
                 <!-- OBSERVATIONS -->

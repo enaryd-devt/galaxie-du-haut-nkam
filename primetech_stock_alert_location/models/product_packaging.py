@@ -9,6 +9,7 @@ class ProductPackaging(models.Model):
     _inherit = "product.packaging"
 
     
+
     uom_name = fields.Char(
         string="Unité",
         compute="_compute_packaging_stock",
@@ -265,16 +266,15 @@ class ProductPackaging(models.Model):
             """)
    
     @api.constrains("qty")
-    def _check_qty(self):
+    def _check_packaging_qty(self):
 
         for rec in self:
 
             if rec.qty <= 0:
-
                 raise ValidationError(
                     "La quantité du conditionnement doit être supérieure à zéro."
                 )
-
+            
     ##############################################################
     # OUTILS
     ##############################################################

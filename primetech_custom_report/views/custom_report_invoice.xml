@@ -54,7 +54,7 @@
                                 <!-- Titre dynamique -->
                                 <p class="mb-1 small text-muted">
                                     <t t-if="o.move_type == 'out_invoice' and o.state == 'posted'">
-                                        FACTURÉ À
+                                        DOIT:
                                     </t>
                                     <t t-else="">
                                         ÉMIS À
@@ -173,7 +173,7 @@
                 </div>
 
             </div>
-        </xpath>
+           </xpath>
 
         <!-- information sur le document -->
         <xpath expr="//div[@id='informations']" position="replace">
@@ -198,7 +198,21 @@
                         </t>
 
                         <t t-if="o.create_uid">
-                            <strong>Document créé par :</strong> <span t-field="o.create_uid"/>
+
+                            <strong>Vendu par :</strong>
+
+                            <span t-field="o.create_uid"/>
+
+                            <span class="text-muted">
+
+                                |
+
+                                Le
+                                <span t-field="o.create_date"
+                                    t-options="{'widget':'datetime'}"/>
+
+                            </span>
+
                         </t>
 
 
@@ -208,59 +222,377 @@
         </xpath>
 
             
-            <!-- tableau des articles -->
+        <!-- ===================================================== -->
+        <!-- TABLEAU DES ARTICLES -->
+        <!-- ===================================================== -->
+
         <xpath expr="//table[@name='invoice_line_table']" position="replace">
-            <table class="table table-sm mb-0" name="invoice_line_table" style="width: 100%; border-collapse: collapse; margin: 0 auto;">
-                <thead class="bg-primary">
-                    <tr class="border-bottom">
-                        <th class="text-start border p-1" style="color: white;">Désignation</th>
-                        <th class="text-end border p-1" style="color: white;">Quantité</th>
-                        <th class="text-end border p-1" style="color: white;">Prix Unitaire</th>
-                        <th class="text-end border p-1" style="color: white;" t-if="display_discount">Remise %</th>
-                        <th class="text-end border p-1" style="color: white;">Taxes</th>
-                        <th class="text-end border p-1" style="color: white;">Montant</th>
+
+            <table class="table table-sm mb-0"
+                name="invoice_line_table"
+                style="width:100%;border-collapse:collapse;table-layout:fixed;">
+
+                <!-- ============================================= -->
+                <!-- EN-TÊTE -->
+                <!-- ============================================= -->
+
+                <thead>
+
+                    <tr style="background:#1F4E79;">
+
+                        <th style="width:40%;padding:8px;color:white;">
+                            Désignation
+                        </th>
+
+                        <th style="width:17%;padding:8px;color:white;text-align:center;">
+                            Quantité
+                        </th>
+
+                        <th style="width:17%;padding:8px;color:white;text-align:right;">
+                            Prix unitaire
+                        </th>
+
+                        <th t-if="display_discount"
+                            style="width:6%;padding:8px;color:white;text-align:center;">
+                            Remise
+                        </th>
+
+                        <th t-if="any(line.tax_ids for line in o.invoice_line_ids)"
+                            style="width:8%;padding:8px;color:white;text-align:center;">
+                            TVA
+                        </th>
+
+                        <th style="width:12%;padding:8px;color:white;text-align:right;">
+                            Montant
+                        </th>
+
                     </tr>
+
                 </thead>
+
+                <!-- ============================================= -->
+                <!-- BODY -->
+                <!-- ============================================= -->
+
                 <tbody>
-                    <t t-foreach="o.invoice_line_ids" t-as="line">
-                        <tr t-att-class="'fw-bold o_line_section bg-light' if line.display_type == 'line_section' else 'fst-italic text-muted' if line.display_type == 'line_note' else ''">
-                            <t t-if="line.display_type == 'product'">
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: left;">
-                                    <span t-field="line.name" t-options="{'widget': 'text'}"/>
+
+                    <t t-foreach="o.invoice_line_ids"
+                    t-as="line">
+
+                        <!-- ===================================== -->
+                        <!-- PRODUIT -->
+                        <!-- ===================================== -->
+
+                        <t t-if="line.display_type == 'product' or not line.display_type">
+
+                            <t t-set="taxes"
+                            t-value="', '.join([tax.invoice_label or tax.name for tax in line.tax_ids])"/>
+
+                            <tr>
+
+                                <!-- Désignation -->
+
+                                <td style="
+                                    padding:7px 8px;
+                                    border-bottom:1px solid #E9ECEF;
+                                    vertical-align:top;
+                                ">
+
+                                    <div style="
+                                        font-size:14px;
+                                        font-weight:600;
+                                        color:#2F3B4A;
+                                    ">
+
+                                        <span t-field="line.name"
+                                            t-options="{'widget':'text'}"/>
+
+                                    </div>
+
+                                    <div t-if="line.product_id.default_code"
+                                        style="
+                                            margin-top:2px;
+                                            font-size:10px;
+                                            color:#6C757D;
+                                        ">
+
+                                        Réf :
+                                        <span t-field="line.product_id.default_code"/>
+
+                                    </div>
+
                                 </td>
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: right;">
-                                    <span t-field="line.quantity" class="text-nowrap"/>
-                                    <span t-field="line.product_uom_id" groups="uom.group_uom"/>
+
+                                <!-- Quantité -->
+
+                                <td style="
+                                    text-align:center;
+                                    border-bottom:1px solid #E9ECEF;
+                                    vertical-align:middle;
+                                    white-space:nowrap;
+                                ">
+
+                                    <strong>
+
+                                        <span t-field="line.packaging_qty"/>
+
+                                        
+
+                                        <span t-field="line.packaging_name"/>
+
+                                    </strong>
+
                                 </td>
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: right;">
-                                    <span t-field="line.price_unit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+
+                                <!-- Prix -->
+
+                                <td style="
+                                    text-align:right;
+                                    border-bottom:1px solid #E9ECEF;
+                                    vertical-align:middle;
+                                    white-space:nowrap;
+                                    font-size:12.5px;
+                                ">
+
+                                    <strong>
+
+                                        <span t-out="'{:,.0f}'.format(line.packaging_unit_price).replace(',', ' ')"/>
+
+                                    </strong>
+
+                                    <span style="
+                                        font-size:10px;
+                                        color:#6C757D;
+                                    ">
+
+                                        /
+
+                                        <span t-field="line.packaging_name"/>
+
+                                    </span>
+
                                 </td>
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: right;" t-if="display_discount">
-                                    <span t-field="line.discount"/>
+                                <!-- Remise -->
+
+                                <td t-if="display_discount"
+                                    style="
+                                        text-align:center;
+                                        border-bottom:1px solid #E9ECEF;
+                                        vertical-align:middle;
+                                        white-space:nowrap;
+                                    ">
+
+                                    <span t-field="line.discount"/>%
+
                                 </td>
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: right;">
-                                    <t t-set="taxes" t-value="', '.join([tax.invoice_label or tax.name for tax in line.tax_ids])"/>
-                                    <span t-out="taxes">-</span>
+
+                                <!-- TVA -->
+
+                                <td t-if="any(l.tax_ids for l in o.invoice_line_ids)"
+                                    style="
+                                        text-align:center;
+                                        border-bottom:1px solid #E9ECEF;
+                                        vertical-align:middle;
+                                        font-size:11px;
+                                    ">
+
+                                    <span t-out="taxes"/>
+
                                 </td>
-                                <td style="border: 1px solid #dee2e6; padding: 4px; text-align: right;">
-                                    <span t-field="line.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+
+                                <!-- Montant -->
+
+                                <td style="
+                                    text-align:right;
+                                    border-bottom:1px solid #E9ECEF;
+                                    vertical-align:middle;
+                                    white-space:nowrap;
+                                    font-size:13px;
+                                ">
+
+                                    <strong>
+
+                                        <span
+                                            t-field="line.packaging_subtotal"
+                                            t-options="{
+                                                'widget':'monetary',
+                                                'display_currency':o.currency_id
+                                            }"/>
+
+                                    </strong>
+
                                 </td>
-                            </t>
-                            <t t-elif="line.display_type == 'line_section'">
-                                <td colspan="99" style="border: 1px solid #dee2e6; padding: 4px; font-weight: bold; background-color: #f8f9fa;">
-                                    <span t-field="line.name" t-options="{'widget': 'text'}"/>
+
+                            </tr>
+
+                            <!-- ===================================== -->
+                            <!-- RESTE NON CONDITIONNÉ -->
+                            <!-- ===================================== -->
+
+                            <tr t-if="line.has_remaining"
+                                style="background:#FAFAFA;">
+
+                                <!-- Désignation -->
+
+                                <td style="
+                                    padding:6px 8px 6px 22px;
+                                    border-bottom:1px dashed #D9D9D9;
+                                    background:#FAFAFA;
+                                    font-size:11px;
+                                    color:#6C757D;
+                                ">
+
+                                    <i class="fa fa-angle-right text-secondary"
+                                    style="margin-right:6px;"/>
+
+                                    <span t-field="line.product_id.display_name"/>
+
+                                    <span style="color:#A0A0A0;">
+                                        (Non conditionné)
+                                    </span>
+
                                 </td>
-                            </t>
-                            <t t-elif="line.display_type == 'line_note'">
-                                <td colspan="99" style="border: 1px solid #dee2e6; padding: 4px; font-style: italic; color: #6c757d;">
-                                    <span t-field="line.name" t-options="{'widget': 'text'}"/>
+
+                                <!-- Quantité -->
+
+                                <td style="
+                                    text-align:center;
+                                    border-bottom:1px dashed #D9D9D9;
+                                    white-space:nowrap;
+                                    font-size:11px;
+                                ">
+                                        <span t-field="line.remaining_qty"/>
+                                        <span t-field="line.remaining_name"/>
+
                                 </td>
-                            </t>
-                        </tr>
+
+                                <!-- Prix -->
+
+                                <td style="
+                                    text-align:right;
+                                    border-bottom:1px dashed #D9D9D9;
+                                    white-space:nowrap;
+                                    font-size:12px;
+                                ">
+
+                                    <span t-out="'{:,.0f}'.format(line.remaining_unit_price).replace(',', ' ')"/>
+
+                                    /
+
+                                    <span t-field="line.remaining_name"/>
+
+                                </td>
+
+                                <!-- Remise -->
+
+                                <td t-if="display_discount"
+                                    style="
+                                        text-align:center;
+                                        border-bottom:1px dashed #D9D9D9;
+                                        font-size:11px;
+                                    ">
+
+                                    <span t-field="line.discount"/>%
+
+                                </td>
+
+                                <!-- TVA -->
+
+                                <td t-if="any(l.tax_ids for l in o.invoice_line_ids)"
+                                    style="
+                                        text-align:center;
+                                        border-bottom:1px dashed #D9D9D9;
+                                        font-size:11px;
+                                    ">
+
+                                    <span t-out="taxes"/>
+
+                                </td>
+
+                                <!-- Montant -->
+
+                                <td style="
+                                    text-align:right;
+                                    border-bottom:1px dashed #D9D9D9;
+                                    white-space:nowrap;
+                                    font-size:11px;
+                                    ">
+
+                                    <strong>
+
+                                        <span
+                                            t-field="line.remaining_subtotal"
+                                            t-options="{
+                                                'widget':'monetary',
+                                                'display_currency':o.currency_id
+                                            }"/>
+
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+                        </t>
+                        <!-- ===================================== -->
+                        <!-- SECTION -->
+                        <!-- ===================================== -->
+
+                        <t t-elif="line.display_type == 'line_section'">
+
+                            <tr>
+
+                                <td colspan="99"
+                                    style="
+                                        padding:8px;
+                                        background:#F4F6F9;
+                                        font-weight:700;
+                                        color:#2F3B4A;
+                                        border-bottom:1px solid #D9DEE5;
+                                    ">
+
+                                    <span
+                                        t-field="line.name"
+                                        t-options="{'widget':'text'}"/>
+
+                                </td>
+
+                            </tr>
+
+                        </t>
+
+                        <!-- ===================================== -->
+                        <!-- NOTE -->
+                        <!-- ===================================== -->
+
+                        <t t-elif="line.display_type == 'line_note'">
+
+                            <tr>
+
+                                <td colspan="99"
+                                    style="
+                                        padding:8px;
+                                        font-style:italic;
+                                        color:#6C757D;
+                                        border-bottom:1px solid #ECEFF3;
+                                    ">
+
+                                    <span
+                                        t-field="line.name"
+                                        t-options="{'widget':'text'}"/>
+
+                                </td>
+
+                            </tr>
+
+                        </t>
+
                     </t>
 
                 </tbody>
+
             </table>
+
         </xpath>
 
         <!-- les informations sur les condition de paiement -->
@@ -417,7 +749,7 @@
                                     </tr>
                                 </t>
                                 <tr style="font-weight:700;" class="text-primary">
-                                    <td>Total à payer</td>
+                                    <td>Reste à payer</td>
                                     <td class="text-end">
                                         <span t-field="o.amount_residual" t-options='{"widget":"monetary","display_currency":o.currency_id}'/>
                                     </td>
@@ -459,7 +791,7 @@
 
         <!-- mention imprimé le -->
         <xpath expr="//div[@id='payment_term']" position="after">
-            <div style="width:100%; text-align:left; font-size:9px; color:#777; margin-top:10px;">
+            <div style="width:100%; text-align:left; font-size:11px; color:#777012; margin-top:10px;">
                 Imprimé par <span t-esc="user.name"/> le 
                 <span t-esc="datetime.datetime.now().strftime('%d/%m/%Y à %H:%M:%S')"/>
             </div>
