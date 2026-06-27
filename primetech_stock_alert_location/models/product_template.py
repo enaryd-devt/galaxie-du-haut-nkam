@@ -207,7 +207,6 @@ class ProductTemplate(models.Model):
                     <i class="fa fa-warehouse"
                     style="color:#0D6EFD;margin-right:6px;"></i>
 
-                    Stock par magasin
 
                 </div>
 
@@ -349,22 +348,15 @@ class ProductTemplate(models.Model):
 
                     <span style="
                         min-width:60px;
-                        font-size:17px;
-                        font-weight:700;
-                        color:#198754;
+                        font-size:15px;
+                        font-weight:600;
+                        color:#147044;
                         font-variant-numeric:tabular-nums;
                     ">
-                        {fmt(packaging_count)}
+                        {fmt(packaging_count)} {packaging.name}
                     </span>
 
-                    <span style="
-                        font-size:14px;
-                        font-weight:600;
-                        color:#343A40;
-                    ">
-                        {packaging.name}
-                    </span>
-
+            
                 </div>
                 """)
 
@@ -384,19 +376,12 @@ class ProductTemplate(models.Model):
 
                     <span style="
                         min-width:60px;
-                        font-size:17px;
-                        font-weight:700;
-                        color:#F39C12;
+                        font-size:13px;
+                        font-weight:600;
+                        color:#000040;
                         font-variant-numeric:tabular-nums;
                     ">
-                        {fmt(remaining)}
-                    </span>
-
-                    <span style="
-                        font-size:14px;
-                        color:#6C757D;
-                    ">
-                        non conditionnées
+                        {fmt(remaining)} non conditionnée(s)
                     </span>
 
                 </div>
@@ -410,20 +395,6 @@ class ProductTemplate(models.Model):
             <div style="
                 padding:4px 0;
             ">
-
-                <div style="
-                    font-size:14px;
-                    font-weight:600;
-                    color:#495057;
-                    margin-bottom:8px;
-                ">
-
-                    <i class="fa fa-boxes-stacked"
-                    style="color:#0D6EFD;margin-right:6px;"></i>
-
-                    Quantité par conditionnement
-
-                </div>
 
                 {"".join(rows)}
 

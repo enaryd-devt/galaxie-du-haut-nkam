@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <record id="product_product_stock_dashboard"
+    <record id="product_template_stock_dashboard"
             model="ir.ui.view">
 
-        <field name="name">product.product.stock.dashboard</field>
-        <field name="model">product.product</field>
+        <field name="name">product.template.stock.dashboard</field>
+        <field name="model">product.template</field>
 
         <field name="inherit_id"
-               ref="product.product_normal_form_view"/>
+               ref="product.product_template_only_form_view"/>
 
         <field name="arch" type="xml">
 
@@ -18,53 +18,222 @@
                 <div class="o_stock_dashboard"
                      invisible="not has_stock_alerts">
 
-                    <!-- Résumé -->
-
+                    <!-- Séparation -->
                     <div style="
                         display:flex;
-                        gap:24px;
-                        align-items:flex-start;
-                    ">
+                        gap:18px;
+                        align-items:stretch;
+                        margin-top:12px;
+                        ">
 
-                        <div style="flex:0 0 40%;max-width:40%;">
+                        <!-- ========================================== -->
+                        <!-- STOCK PAR MAGASIN -->
+                        <!-- ========================================== -->
 
-                            <field name="packaging_summary"
-                                   widget="html"
-                                   nolabel="1"/>
+                        <div style="
+                            flex:1;
+                            background:#FFFFFF;
+                            border:1px solid #E5E7EB;
+                            border-radius:12px;
+                            padding:16px 18px;
+                            box-shadow:0 2px 8px rgba(0,0,0,.04);
+                        ">
+
+                            <div style="
+                                font-size:13px;
+                                font-weight:700;
+                                color:#374151;
+                                text-transform:uppercase;
+                                letter-spacing:.5px;
+                                margin-bottom:12px;
+                                padding-bottom:8px;
+                                border-bottom:1px solid #ECECEC;
+                            ">
+
+                                <i class="fa fa-building-o"
+                                style="color:#1F4E79;margin-right:6px;"/>
+
+                                Stock par magasin
+
+                            </div>
+
+                            <field name="warehouse_summary"
+                                widget="html"
+                                nolabel="1"/>
 
                         </div>
 
-                        <div style="flex:0 0 60%;max-width:60%;">
+                        <!-- ========================================== -->
+                        <!-- CONDITIONNEMENTS -->
+                        <!-- ========================================== -->
 
-                            <field name="warehouse_summary"
-                                   widget="html"
-                                   nolabel="1"/>
+                        <div style="
+                            flex:1;
+                            background:#FFFFFF;
+                            border:1px solid #E5E7EB;
+                            border-radius:12px;
+                            padding:16px 18px;
+                            box-shadow:0 2px 8px rgba(0,0,0,.04);
+                        ">
+
+                            <div style="
+                                font-size:13px;
+                                font-weight:700;
+                                color:#374151;
+                                text-transform:uppercase;
+                                letter-spacing:.5px;
+                                margin-bottom:12px;
+                                padding-bottom:8px;
+                                border-bottom:1px solid #ECECEC;
+                            ">
+
+                                <i class="fa fa-dropbox"
+                                style="color:#198754;margin-right:6px;"/>
+
+                                Quantité par conditionnement
+
+                            </div>
+
+                            <field name="packaging_summary"
+                                widget="html"
+                                nolabel="1"/>
 
                         </div>
 
                     </div>
+  
 
-                    <!-- Tableau -->
+                    <!-- Titre -->
 
-                    <field name="stock_alert_ids"
-                           nolabel="1">
+                    <!-- ====================================================== -->
+                    <!-- ENTETE -->
+                    <!-- ====================================================== -->
 
-                        <list
-                            create="0"
-                            delete="0"
-                            editable="bottom">
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        margin-bottom:14px;
+                        padding:14px 18px;
+                        background:#FFFFFF;
+                        border:1px solid #E6EAF0;
+                        border-radius:12px;
+                        box-shadow:0 2px 8px rgba(0,0,0,.04);
+                        ">
 
-                            <field name="location_id"/>
-                            <field name="lot_id"/>
-                            <field name="expiration_date"/>
-                            <field name="available_quantity"/>
-                            <field name="minimum_qty"/>
-                            <field name="status_html"
-                                   widget="html"/>
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                        ">
 
-                        </list>
+                            <div style="
+                                width:42px;
+                                height:42px;
+                                border-radius:10px;
+                                background:#EDF5FF;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                margin-right:12px;
+                            ">
 
-                    </field>
+                                <span class="fa fa-cubes"
+                                    style="
+                                            color:#1F4E79;
+                                            font-size:18px;
+                                    "/>
+
+                            </div>
+
+                            <div>
+
+                                <div style="
+                                    font-size:17px;
+                                    font-weight:700;
+                                    color:#23354D;
+                                ">
+
+                                    Stock par magasin
+
+                                </div>
+
+                                <div style="
+                                    color:#6C757D;
+                                    font-size:12px;
+                                ">
+
+                                    Disponibilités, lots, seuils d'alerte et dates d'expiration
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            name="action_sync_stock"
+                            type="object"
+                            string="Actualiser"
+                            icon="fa-refresh"
+                            class="btn btn-primary"/>
+
+                    </div>
+
+                    <!-- ====================================================== -->
+                    <!-- TABLEAU -->
+                    <!-- ====================================================== -->
+
+                    <div style="
+                        background:#FFFFFF;
+                        border:1px solid #E6EAF0;
+                        border-radius:12px;
+                        overflow:hidden;
+                        box-shadow:0 2px 8px rgba(0,0,0,.04);
+                        ">
+
+                        <field name="stock_alert_ids"
+                            nolabel="1">
+
+                            <list
+                                create="0"
+                                delete="0"
+                                editable="bottom"
+                                decoration-success="status == 'ok'"
+                                decoration-warning="status == 'warning'"
+                                decoration-danger="status == 'alert'">
+
+                                <field name="status"
+                                    column_invisible="1"/>
+
+                                <field name="location_id"
+                                    string="Magasin / Emplacement"
+                                    readonly="1"/>
+
+                                <field name="lot_id"
+                                    string="Lot / Série"
+                                    readonly="1"/>
+
+                                <field name="expiration_date"
+                                    string="Expiration"
+                                    readonly="1"/>
+
+                                <field name="available_quantity"
+                                    string="Disponible"
+                                    readonly="1"/>
+
+                                <field name="minimum_qty"
+                                    string="Seuil"/>
+
+                                <field name="status_html"
+                                    widget="html"
+                                    readonly="1"/>
+
+                            </list>
+
+                        </field>
+
+                    </div>
+                                
 
                 </div>
 
