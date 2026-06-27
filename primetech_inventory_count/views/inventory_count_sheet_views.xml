@@ -110,7 +110,7 @@
                         string="Remettre en brouillon"
                         icon="fa-undo"
                         class="btn-warning"
-                        invisible="state != 'exported'"
+                        invisible="state not in ('review', 'validated', 'exported', 'cancel')"
                     />
 
                     <field

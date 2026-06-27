@@ -1195,13 +1195,6 @@ class InventoryCountSheet(models.Model):
 
         self.ensure_one()
 
-        if not self.env.user.has_group(
-            "primetech_inventory_count.group_inventory_manager"
-        ):
-            raise UserError(
-                "Vous n'avez pas les droits nécessaires."
-            )
-
         self.write({
 
             "state": "draft",
