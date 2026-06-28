@@ -7,8 +7,10 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     packaging_qty = fields.Float(
-        string="Nb Cond.",
-        default=0.0,
+        string="Qté de Cond.",
+        compute="_compute_packaging_qty",
+        store=True,
+        readonly=False,
         copy=False,
     )
 
@@ -78,3 +80,22 @@ class StockMove(models.Model):
                 move.packaging_qty
                 * move.product_packaging_id.qty
             )
+    @api.depends("product_uom_qty", "product_packaging_id")
+    def _compute_packaging_qty(self):
+        """Recalcule automatiquement le nombre de conditionnements."""
+
+        for move in self:
+
+            if (
+                move.product_packaging_id
+                and move.product_packaging_id.qty > 0
+            ):
+
+                move.packaging_qty = (
+                    move.product_uom_qty
+                    / move.product_packaging_id.qty
+                )
+
+            else:
+
+                move.packaging_qty = 0.0
