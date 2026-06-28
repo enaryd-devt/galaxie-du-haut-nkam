@@ -4,7 +4,7 @@
     'summary': 'Custom layout report for Odoo 18',
     'author': 'PrimeTech',
     'depends': [
-        'sale',
+        'sale_management',
         'account',
         'product',
     ],
