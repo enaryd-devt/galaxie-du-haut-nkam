@@ -76,6 +76,8 @@ class AccountMoveLine(models.Model):
         compute="_compute_packaging_display",
     )
 
+    
+
     def _prepare_invoice_line(self, **optional_values):
         vals = super()._prepare_invoice_line(**optional_values)
 

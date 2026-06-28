@@ -296,7 +296,7 @@
                                     padding:7px 8px;
                                     border-bottom:1px solid #E9ECEF;
                                     vertical-align:top;
-                                ">
+                                    ">
 
                                     <div style="
                                         font-size:14px;
@@ -322,6 +322,7 @@
                                     </div>
 
                                 </td>
+                                
 
                                 <!-- Quantité -->
 
