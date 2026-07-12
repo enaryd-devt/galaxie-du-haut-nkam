@@ -20,12 +20,14 @@
         <!-- ================================================= -->
 
         <xpath expr="//article"
-               position="inside">
+            position="inside">
 
             <!-- ============================================= -->
             <!-- STOCK BADGE -->
+            <!-- Affiché uniquement pour les produits stockables -->
             <!-- ============================================= -->
-            <div t-if="qtyAvailable != null"
+
+            <div t-if="(props.product.is_storable or props.product.type == 'product') and qtyAvailable != null"
                 t-on-mouseenter="onStockEnter"
                 t-on-mouseleave="onStockLeave"
                 t-att-class="{

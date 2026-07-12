@@ -1086,6 +1086,8 @@ class InventoryCountSheet(models.Model):
             "target": "current",
         }
 
+    
+    
     def action_cancel(self):
 
         self.write({
