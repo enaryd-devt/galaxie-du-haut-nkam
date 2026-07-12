@@ -103,224 +103,268 @@
                 "></div>
 
 
-                <!-- ================================= -->
-                <!-- ARTICLES -->
-                <!-- ================================= -->
+                    <!-- ================================= -->
+                    <!-- ARTICLES -->
+                    <!-- ================================= -->
 
-                <div style="
-                    margin-top:5px;
+                    <div style="
+                        margin-top:10px;
                     ">
 
-                    <t t-foreach="props.data.orderlines"
-                    t-as="line"
-                    t-key="line_index">
+                        <t t-foreach="props.data.orderlines"
+                        t-as="line"
+                        t-key="line_index">
 
-                        <div style="
-                            border-bottom:0.2px dotted #ccc;
-                            padding:4px 0;
-                        ">
+                            <div style="
+                                border-bottom:1px dashed #999;
+                                padding:8px 0;
+                            ">
 
-                            <!-- NOM + PU -->
+                                <!-- NOM + PRIX UNITAIRE -->
 
-                            <table style="
-                                width:100%;
-                                font-size:10px;
-                                ">
-
-                                <tr>
-
-                                    <td style="
-                                        font-weight:bold;
-                                        word-break:break-word;
+                                <table style="
+                                    width:100%;
+                                    font-size:17px;
+                                    border-collapse:collapse;
                                     ">
 
-                                        <t t-esc="line.productName"/>
+                                    <tr>
 
-                                    </td>
+                                        <td style="
+                                            
+                                            word-break:break-word;
+                                            width:70%;
+                                            padding-right:6px;
+                                        ">
 
-                                    <td style="
-                                        text-align:right;
-                                        white-space:nowrap;
-                                        
+                                            <t t-esc="line.productName"/>
+
+                                        </td>
+
+
+                                    </tr>
+
+                                </table>
+
+                                <!-- REMISE -->
+
+                                <div
+                                    t-if="line.discount and line.discount != '0'"
+                                    style="
+                                        margin-top:4px;
+                                        font-size:13px;
+                                        font-style:italic;
+                                        color:#666;
                                     ">
 
-                                        <t t-esc="line.unitPrice"/>
+                                    Remise :
+                                    <strong>
+                                        <t t-esc="line.discount"/> %
+                                    </strong>
 
-                                    </td>
+                                </div>
 
-                                </tr>
+                                <!-- QUANTITE -->
 
-                            </table>
-
-                            <!-- REMISE -->
-
-                            <div
-                                t-if="line.discount and line.discount != '0'"
-                                style="
-                                    font-size:8px;
-                                    font-style:italic;
-                                    color:#666;
+                                <table style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    font-size:15px;
+                                    border-collapse:collapse;
                                 ">
 
-                                Remise :
-                                <t t-esc="line.discount"/>%
+                                    <tr>
+
+                                        <td style="
+                                            font-weight:bold;
+                                        ">
+
+                                            <t t-esc="line.qty"/>
+
+                                            ×
+
+                                            <t t-esc="line.unitPrice.replace('FCFA', '').trim()"/>
+
+                                        </td>
+
+                                        <td style="
+                                            text-align:right;
+                                            font-weight:bold;
+                                            font-size:18px;
+                                        ">
+
+                                            <t t-esc="line.price"/>
+
+                                        </td>
+
+                                    </tr>
+
+                                </table>
 
                             </div>
 
-                            <!-- QTE x PU = PT -->
+                        </t>
 
-                            <table style="
-                                width:100%;
-                                margin-top:2px;
-                                font-size:9px;
-                            ">
+                    </div>
 
-                                <tr>
+                    <!-- ================================= -->
+                    <!-- NOMBRE D'ARTICLES -->
+                    <!-- ================================= -->
 
-                                    <td style="
-                                        font-weight:bold;
-                                    ">
+                    <div style="
+                        text-align:right;
+                        margin-top:12px;
+                        font-size:15px;
+                        ">
 
-                                        <t t-esc="line.qty"/>
-                                        x
-                                        <t t-esc="line.unitPrice"/>
+                        <strong>
 
-                                    </td>
+                            Nombre d'articles :
+                            <t t-esc="props.data.orderlines.length"/>
 
-                                    <td style="
-                                        text-align:right;
-                                        font-weight:bold;
-                                        font-size:13px
-                                    ">
+                        </strong>
 
-                                        <t t-esc="line.price"/>
+                    </div>
 
-                                    </td>
+                    <!-- ================================= -->
+                    <!-- TOTAUX -->
+                    <!-- ================================= -->
 
-                                </tr>
-
-                            </table>
-
-                        </div>
-
-                    </t>
-
-                </div>
-
-                <div style="
-                    text-align:right;
-                    margin-top:5px;
-                    font-size:10px;
+                    <div style="
+                        border-top:2px dashed #000;
+                        border-bottom:2px dashed #000;
+                        padding:10px 0;
+                        margin-top:15px;
                     ">
 
-                    <strong>
+                        <table style="
+                            width:100%;
+                            border-collapse:collapse;
+                        ">
 
-                        Nombre d'articles :
-                        <t t-esc="props.data.orderlines.length"/>
+                            <tr>
 
-                    </strong>
+                                <td style="
+                                    font-size:18px;
+                                    font-weight:bold;
+                                    padding:5px 0;
+                                ">
 
-                </div>
+                                    TOTAL À PAYER
 
-                <!-- ================================= -->
-                <!-- TOTAUX -->
-                <!-- ================================= -->
+                                </td>
 
-                <div style="
-                    border-top:1px dashed #000;
-                    border-bottom:1px dashed #000;
-                    padding:6px 0;
-                    margin-top:8px;
-                ">
+                                <td style="
+                                    text-align:right;
+                                    font-size:22px;
+                                    font-weight:bold;
+                                    padding:5px 0;
+                                ">
 
-                    <table style="
-                        width:100%;
-                        font-size:11px;
-                    ">
+                                    <t t-esc="
+                                        props.formatCurrency(
+                                            props.data.amount_total
+                                        )
+                                    "/>
 
-                        <tr>
+                                </td>
 
-                            <td>
-                                <strong>TOTAL À PAYER</strong>
-                            </td>
+                            </tr>
 
-                            <td style="
-                                text-align:right;
-                                font-weight:bold;
-                            ">
-                                <t t-esc="
-                                    props.formatCurrency(
-                                        props.data.amount_total
-                                    )
-                                "/>
-                            </td>
+                            <tr>
 
-                        </tr>
+                                <td style="
+                                    font-size:15px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
 
-                        <tr>
+                                    RÈGLEMENT
 
-                            <td>
-                                <strong>RÈGLEMENT</strong>
-                            </td>
+                                </td>
 
-                            <td style="text-align:right;">
+                                <td style="
+                                    text-align:right;
+                                    font-size:16px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
 
-                                <t t-esc="
-                                    props.formatCurrency(
-                                        props.data.total_paid
-                                    )
-                                "/>
-
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>
-                                <strong>RESTE À PAYER</strong>
-                            </td>
-
-                            <td style="text-align:right;">
-
-                                <t t-esc="
-                                    props.formatCurrency(
-                                        Math.max(
-                                            0,
-                                            props.data.amount_total -
+                                    <t t-esc="
+                                        props.formatCurrency(
                                             props.data.total_paid
                                         )
-                                    )
-                                "/>
+                                    "/>
 
-                            </td>
+                                </td>
 
-                        </tr>
+                            </tr>
 
-                        <tr t-if="props.data.order_change > 0">
+                            <tr>
 
-                            <td>
-                                <strong>MONNAIE RENDUE</strong>
-                            </td>
+                                <td style="
+                                    font-size:15px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
 
-                            <td style="
-                                text-align:right;
-                                font-weight:bold;
-                            ">
+                                    RESTE À PAYER
 
-                                <t t-esc="
-                                    props.formatCurrency(
-                                        props.data.order_change
-                                    )
-                                "/>
+                                </td>
 
-                            </td>
+                                <td style="
+                                    text-align:right;
+                                    font-size:16px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
 
-                        </tr>
+                                    <t t-esc="
+                                        props.formatCurrency(
+                                            Math.max(
+                                                0,
+                                                props.data.amount_total -
+                                                props.data.total_paid
+                                            )
+                                        )
+                                    "/>
 
-                    </table>
+                                </td>
 
-                </div>
+                            </tr>
+
+                            <tr t-if="props.data.order_change > 0">
+
+                                <td style="
+                                    font-size:15px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
+
+                                    MONNAIE RENDUE
+
+                                </td>
+
+                                <td style="
+                                    text-align:right;
+                                    font-size:18px;
+                                    font-weight:bold;
+                                    padding:4px 0;
+                                ">
+
+                                    <t t-esc="
+                                        props.formatCurrency(
+                                            props.data.order_change
+                                        )
+                                    "/>
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </div>
 
                 <!-- ================================= -->
                 <!-- MODES DE REGLEMENT -->
