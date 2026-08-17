@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_primetech" model="ir.module.category">
+        <field name="name">Primetech Supply Chain</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="group_primetech_rayonniste" model="res.groups">
+        <field name="name">Rayonniste</field>
+        <field name="category_id" ref="module_category_primetech"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Peut créer et soumettre des demandes de réapprovisionnement pour sa boutique.</field>
+    </record>
+
+    <record id="group_primetech_responsable_boutique" model="res.groups">
+        <field name="name">Responsable Boutique</field>
+        <field name="category_id" ref="module_category_primetech"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Traite et valide les demandes de réapprovisionnement de sa boutique avant transmission au magasin.</field>
+    </record>
+
+    <record id="group_primetech_responsable_magasin" model="res.groups">
+        <field name="name">Responsable Magasin</field>
+        <field name="category_id" ref="module_category_primetech"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Approuve les demandes et déclenche les transferts de stock depuis le magasin central.</field>
+    </record>
+</odoo>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_replenishment_request_form" model="ir.ui.view">
+        <field name="name">primetech.replenishment.request.form</field>
+        <field name="model">primetech.replenishment.request</field>
+        <field name="arch" type="xml">
+            <form string="Demande de réapprovisionnement">
+                <header>
+                    <button name="action_submit_to_shop" type="object"
+                            string="Soumettre à la boutique" class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="primetech_supply_chain.group_primetech_rayonniste"/>
+
+                    <button name="action_validate_shop" type="object"
+                            string="Valider et transmettre au magasin" class="oe_highlight"
+                            invisible="state != 'to_approve_shop'"
+                            groups="primetech_supply_chain.group_primetech_responsable_boutique"/>
+                    <button name="action_refuse_shop" type="object"
+                            string="Refuser"
+                            invisible="state != 'to_approve_shop'"
+                            groups="primetech_supply_chain.group_primetech_responsable_boutique"/>
+
+                    <button name="action_approve_warehouse" type="object"
+                            string="Approuver et lancer le transfert" class="oe_highlight"
+                            invisible="state != 'to_approve_warehouse'"
+                            groups="primetech_supply_chain.group_primetech_responsable_magasin"/>
+                    <button name="action_refuse_warehouse" type="object"
+                            string="Refuser"
+                            invisible="state != 'to_approve_warehouse'"
+                            groups="primetech_supply_chain.group_primetech_responsable_magasin"/>
+
+                    <button name="action_reset_draft" type="object"
+                            string="Remettre en brouillon"
+                            invisible="state != 'refused'"/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,to_approve_shop,to_approve_warehouse,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_picking" type="object"
+                                class="oe_stat_button" icon="fa-truck"
+                                invisible="not picking_id">
+                            <field name="picking_state" widget="statinfo" string="Transfert"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="shop_id" readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="rayonniste_id" readonly="1"/>
+                            <field name="responsable_boutique_id" readonly="1"/>
+                            <field name="responsable_magasin_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="warehouse_id" readonly="1"/>
+                            <field name="date_request" readonly="1"/>
+                            <field name="date_shop_validation" readonly="1"
+                                   invisible="not date_shop_validation"/>
+                            <field name="date_warehouse_validation" readonly="1"
+                                   invisible="not date_warehouse_validation"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Produits demandés">
+                            <field name="line_ids"
+                                   readonly="state not in ('draft', 'to_approve_shop')">
+                                <list editable="bottom">
+                                    <field name="product_id"
+                                           readonly="parent.state != 'draft'"/>
+                                    <field name="uom_id" groups="uom.group_uom"/>
+                                    <field name="requested_qty"
+                                           readonly="parent.state != 'draft'"/>
+                                    <field name="shop_stock_qty" readonly="1"/>
+                                    <field name="warehouse_stock_qty" readonly="1"/>
+                                    <field name="approved_qty"
+                                           readonly="parent.state != 'to_approve_shop'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="note" placeholder="Commentaire, urgence, précisions..."/>
+                            <field name="refusal_reason"
+                                   placeholder="Motif du refus..."
+                                   invisible="state != 'refused'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_replenishment_request_list" model="ir.ui.view">
+        <field name="name">primetech.replenishment.request.list</field>
+        <field name="model">primetech.replenishment.request</field>
+        <field name="arch" type="xml">
+            <list string="Demandes de réapprovisionnement" decoration-muted="state == 'refused'"
+                  decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="shop_id"/>
+                <field name="rayonniste_id"/>
+                <field name="date_request"/>
+                <field name="responsable_boutique_id"/>
+                <field name="responsable_magasin_id"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('to_approve_shop', 'to_approve_warehouse')"
+                       decoration-success="state in ('approved', 'done')"
+                       decoration-danger="state == 'refused'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_replenishment_request_search" model="ir.ui.view">
+        <field name="name">primetech.replenishment.request.search</field>
+        <field name="model">primetech.replenishment.request</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une demande">
+                <field name="name"/>
+                <field name="shop_id"/>
+                <field name="rayonniste_id"/>
+                <field name="responsable_boutique_id"/>
+                <field name="responsable_magasin_id"/>
+                <filter string="Mes demandes" name="my_requests"
+                        domain="[('rayonniste_id', '=', uid)]"/>
+                <filter string="À traiter (Boutique)" name="to_approve_shop"
+                        domain="[('state', '=', 'to_approve_shop')]"/>
+                <filter string="À traiter (Magasin)" name="to_approve_warehouse"
+                        domain="[('state', '=', 'to_approve_warehouse')]"/>
+                <filter string="Approuvées" name="approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter string="Refusées" name="refused"
+                        domain="[('state', '=', 'refused')]"/>
+                <separator/>
+                <filter string="Brouillons" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Boutique" name="group_shop" context="{'group_by': 'shop_id'}"/>
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Rayonniste" name="group_rayonniste" context="{'group_by': 'rayonniste_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_replenishment_request" model="ir.actions.act_window">
+        <field name="name">Demandes de réapprovisionnement</field>
+        <field name="res_model">primetech.replenishment.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_replenishment_request_search"/>
+        <field name="context">{'search_default_my_requests': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez une nouvelle demande de réapprovisionnement
+            </p>
+            <p>
+                Le rayonniste crée la demande, le responsable boutique la traite
+                puis la transmet au responsable des magasins qui déclenche le transfert.
+            </p>
+        </field>
+    </record>
+
+</odoo>

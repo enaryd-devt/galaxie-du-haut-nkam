@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_primetech_root"
+              name="Primetech Supply Chain"
+              sequence="15"
+              web_icon="primetech_supply_chain,static/description/icon.png"/>
+
+    <!-- Section Réapprovisionnement (brique actuelle) -->
+    <menuitem id="menu_primetech_replenishment"
+              name="Réapprovisionnement"
+              parent="menu_primetech_root"
+              sequence="10"/>
+
+    <menuitem id="menu_primetech_requests"
+              name="Demandes"
+              parent="menu_primetech_replenishment"
+              action="action_replenishment_request"
+              sequence="10"/>
+
+    <!-- Sections à venir : Transferts inter-magasins, Inventaires -->
+
+    <menuitem id="menu_primetech_configuration"
+              name="Configuration"
+              parent="menu_primetech_root"
+              sequence="90"/>
+
+    <menuitem id="menu_primetech_shops"
+              name="Boutiques"
+              parent="menu_primetech_configuration"
+              action="action_primetech_shop"
+              sequence="10"/>
+
+</odoo>

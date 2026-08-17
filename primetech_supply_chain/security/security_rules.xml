@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rayonniste : ne voit que les demandes de ses boutiques ou les siennes -->
+    <record id="rule_request_rayonniste" model="ir.rule">
+        <field name="name">Demande réappro : Rayonniste</field>
+        <field name="model_id" ref="model_primetech_replenishment_request"/>
+        <field name="groups" eval="[(4, ref('group_primetech_rayonniste'))]"/>
+        <field name="domain_force">
+            ['|', ('rayonniste_id', '=', user.id), ('shop_id.rayonniste_ids', 'in', [user.id])]
+        </field>
+    </record>
+
+    <!-- Responsable Boutique : ne voit que les demandes de sa/ses boutique(s) -->
+    <record id="rule_request_responsable_boutique" model="ir.rule">
+        <field name="name">Demande réappro : Responsable Boutique</field>
+        <field name="model_id" ref="model_primetech_replenishment_request"/>
+        <field name="groups" eval="[(4, ref('group_primetech_responsable_boutique'))]"/>
+        <field name="domain_force">
+            [('shop_id.responsable_boutique_id', '=', user.id)]
+        </field>
+    </record>
+
+    <!-- Responsable Magasin : ne voit que les demandes des boutiques qu'il approvisionne -->
+    <record id="rule_request_responsable_magasin" model="ir.rule">
+        <field name="name">Demande réappro : Responsable Magasin</field>
+        <field name="model_id" ref="model_primetech_replenishment_request"/>
+        <field name="groups" eval="[(4, ref('group_primetech_responsable_magasin'))]"/>
+        <field name="domain_force">
+            [('shop_id.responsable_magasin_id', '=', user.id)]
+        </field>
+    </record>
+
+    <!-- Gestionnaire de stock : accès complet -->
+    <record id="rule_request_stock_manager" model="ir.rule">
+        <field name="name">Demande réappro : Gestionnaire de stock (accès complet)</field>
+        <field name="model_id" ref="model_primetech_replenishment_request"/>
+        <field name="groups" eval="[(4, ref('stock.group_stock_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>
