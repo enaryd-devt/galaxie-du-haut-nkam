@@ -1,28 +1,58 @@
 /** @odoo-module **/
 
-import { Component, onMounted, onWillStart, useState } from "@odoo/owl";
+import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { rpc } from "@web/core/network/rpc";
 import { useService } from "@web/core/utils/hooks";
+import { getDefaultCustomDateRange, getGlobalDateFilter, globalDateFilterPayload, setGlobalDateFilter, subscribeToGlobalDateFilter } from "../services/dashboard_state_service";
 
 export class StockDashboard extends Component {
     setup() {
         this.action = useService("action");
-        this.state = useState({ loading: true, period: "month", warehouseSort: "value_desc", data: {} });
+        this.state = useState({ loading: true, ...getGlobalDateFilter(), warehouseSort: "value_desc", data: {} });
         onWillStart(async () => this.loadDashboard());
-        onMounted(() => setTimeout(() => this.renderCharts(), 100));
+        onMounted(() => {
+            this._unsubscribeGlobalDateFilter = subscribeToGlobalDateFilter((filter) => {
+                if (!this.isCurrentGlobalDateFilter(filter)) this.applyGlobalDateFilter(filter);
+            });
+            setTimeout(() => this.renderCharts(), 100);
+        });
+        onWillUnmount(() => this._unsubscribeGlobalDateFilter?.());
     }
 
     async loadDashboard() {
         this.state.loading = true;
-        this.state.data = await rpc("/primetech/stock/dashboard", { period: this.state.period });
+        this.state.data = await rpc("/primetech/stock/dashboard", globalDateFilterPayload(this.state));
         this.state.loading = false;
         setTimeout(() => this.renderCharts(), 0);
     }
 
-    async setPeriod(period) {
-        this.state.period = period;
+    isCurrentGlobalDateFilter(filter) {
+        return ["period", "dateFrom", "dateTo"].every((key) => this.state[key] === filter[key]);
+    }
+
+    async applyGlobalDateFilter(filter) {
+        Object.assign(this.state, filter);
         await this.loadDashboard();
+    }
+
+    async onGlobalPeriodChange(ev) {
+        let next = { period: ev.target.value, dateFrom: this.state.dateFrom, dateTo: this.state.dateTo };
+        if (next.period === "custom" && (!next.dateFrom || !next.dateTo)) {
+            next = { ...next, ...getDefaultCustomDateRange() };
+        }
+        Object.assign(this.state, next);
+        setGlobalDateFilter(next);
+        await this.loadDashboard();
+    }
+
+    async onGlobalDateChange(field, ev) {
+        const next = { period: this.state.period, dateFrom: this.state.dateFrom, dateTo: this.state.dateTo, [field]: ev.target.value };
+        Object.assign(this.state, next);
+        if (next.dateFrom && next.dateTo && next.dateFrom <= next.dateTo) {
+            setGlobalDateFilter(next);
+            await this.loadDashboard();
+        }
     }
 
     refresh() {

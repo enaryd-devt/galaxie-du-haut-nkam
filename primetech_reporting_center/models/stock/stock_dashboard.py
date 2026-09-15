@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 
-from dateutil.relativedelta import relativedelta
-
 from odoo import api, fields, models
+
+from ..date_range import DashboardDateRange
 
 
 class StockDashboard(models.AbstractModel):
@@ -20,16 +20,11 @@ class StockDashboard(models.AbstractModel):
         Location = self.env['stock.location']
 
         today = fields.Date.today()
-        period = filters.get('period', 'month')
-        starts = {
-            'week': today - timedelta(days=today.weekday()),
-            'month': today.replace(day=1),
-            'quarter': today.replace(month=((today.month - 1) // 3) * 3 + 1, day=1),
-            'year': today.replace(month=1, day=1),
-        }
-        start = starts.get(period, starts['month'])
+        period, start, end = DashboardDateRange.resolve(filters, today)
         start_value = fields.Date.to_string(start)
-        previous_start = start - (today - start) - timedelta(days=1)
+        end_value = fields.Date.to_string(end)
+        end_exclusive_value = fields.Date.to_string(end + timedelta(days=1))
+        previous_start, _previous_end = DashboardDateRange.previous_bounds(start, end)
         previous_start_value = fields.Date.to_string(previous_start)
         settings = self.env['primetech.reporting.settings'].get_values()
         min_qty = settings['stock_min_alert_threshold']
@@ -40,8 +35,8 @@ class StockDashboard(models.AbstractModel):
         internal_quants = Quant.search([('location_id', 'child_of', internal_locations.ids)]) if internal_locations else Quant.browse()
         products = internal_quants.mapped('product_id')
         product_domain = [('id', 'in', products.ids)]
-        picking_domain = [('create_date', '>=', start_value)]
-        move_domain = [('state', '=', 'done'), ('date', '>=', start_value)]
+        picking_domain = [('create_date', '>=', start_value), ('create_date', '<', end_exclusive_value)]
+        move_domain = [('state', '=', 'done'), ('date', '>=', start_value), ('date', '<', end_exclusive_value)]
         moves = Move.search(move_domain)
         pickings = Picking.search(picking_domain)
 
@@ -74,7 +69,7 @@ class StockDashboard(models.AbstractModel):
 
         outgoing_moves = moves.filtered(lambda move: move.picking_type_id.code == 'outgoing')
         outgoing_qty = sum(outgoing_moves.mapped('product_uom_qty'))
-        period_days = max((today - start).days + 1, 1)
+        period_days = max((end - start).days + 1, 1)
         average_daily_outgoing = outgoing_qty / period_days if period_days else 0.0
         coverage_days = round(available_qty / average_daily_outgoing, 1) if average_daily_outgoing else 0.0
         average_stock_qty = max((stock_qty + available_qty) / 2, 1)
@@ -103,16 +98,17 @@ class StockDashboard(models.AbstractModel):
             warehouses.append({'id': location.id, 'name': location.display_name, 'value': value, 'available': qty - reserved, 'reserved': reserved, 'incoming': inbound, 'outgoing': outbound, 'latest_move': fields.Date.to_string(latest_move.date.date()) if latest_move and latest_move.date else ''})
 
         period_moves = []
-        step = max((today - start).days // 7, 1)
-        for i in range(8):
-            day = start + timedelta(days=i * step)
-            next_day = day + timedelta(days=step)
+        step = max((period_days + 7) // 8, 1)
+        day = start
+        while day <= end:
+            next_day = min(day + timedelta(days=step), end + timedelta(days=1))
             period_moves.append({
                 'label': day.strftime('%d/%m'),
                 'incoming': Move.search_count([('state', '=', 'done'), ('date', '>=', fields.Date.to_string(day)), ('date', '<', fields.Date.to_string(next_day)), ('picking_type_id.code', '=', 'incoming')]),
                 'outgoing': Move.search_count([('state', '=', 'done'), ('date', '>=', fields.Date.to_string(day)), ('date', '<', fields.Date.to_string(next_day)), ('picking_type_id.code', '=', 'outgoing')]),
                 'internal': Move.search_count([('state', '=', 'done'), ('date', '>=', fields.Date.to_string(day)), ('date', '<', fields.Date.to_string(next_day)), ('picking_type_id.code', '=', 'internal')]),
             })
+            day = next_day
 
         shortage_products = []
         for item in stockout_items[:5]:
@@ -137,7 +133,7 @@ class StockDashboard(models.AbstractModel):
         }
 
         return {
-            'today': fields.Date.to_string(today), 'updated_at': fields.Datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'today': fields.Date.to_string(today), 'date_from': start_value, 'date_to': end_value, 'period': period, 'updated_at': fields.Datetime.now().strftime('%d/%m/%Y %H:%M'),
             'stock_value': stock_value, 'previous_stock_value': previous_stock_value, 'stock_value_growth': growth(stock_value, previous_stock_value),
             'available_qty': available_qty, 'previous_available_qty': previous_available_qty, 'available_growth': growth(available_qty, previous_available_qty),
             'out_of_stock': len(stockout_items), 'previous_out_of_stock': previous_stockout, 'out_of_stock_growth': growth(len(stockout_items), previous_stockout),

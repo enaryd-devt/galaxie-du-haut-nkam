@@ -1,6 +1,8 @@
 from odoo import api, fields, models
 from dateutil.relativedelta import relativedelta
 
+from ..date_range import DashboardDateRange
+
 class PrimetechAccountingDashboard(models.AbstractModel):
     _name = 'primetech.accounting.dashboard'
     _description = 'Primetech Accounting Dashboard'
@@ -99,16 +101,13 @@ class PrimetechAccountingDashboard(models.AbstractModel):
         return {'assets': assets, 'liabilities': liabilities, 'equity': equity, 'liquidity_ratio': round(liquidity_ratio, 2), 'debt_ratio': round(debt_ratio, 2), 'level': level}
 
     @api.model
-    def _accounting_period_bounds(self, period, today):
-        starts = {
-            'today': today,
-            'week': today - relativedelta(days=today.weekday()),
-            'month': today.replace(day=1),
-            'quarter': today.replace(month=((today.month - 1) // 3) * 3 + 1, day=1),
-            'year': today.replace(month=1, day=1),
-        }
-        start = starts.get(period, starts['month'])
-        return start, today
+    def _accounting_period_bounds(self, period, today, date_from=False, date_to=False):
+        _, start, end = DashboardDateRange.resolve({
+            'period': period,
+            'date_from': date_from,
+            'date_to': date_to,
+        }, today)
+        return start, end
 
     @api.model
     def _accounting_comparison_bounds(self, start, end, comparison):
@@ -125,7 +124,7 @@ class PrimetechAccountingDashboard(models.AbstractModel):
         """Live data payload for the accounting overview using the selected real filters."""
         filters = filters or {}
         today = fields.Date.today()
-        period = filters.get('period') or 'month'
+        period, start, end = DashboardDateRange.resolve(filters, today)
         comparison = filters.get('comparison') or 'previous_period'
         company_id = filters.get('company_id') or False
         try:
@@ -137,7 +136,6 @@ class PrimetechAccountingDashboard(models.AbstractModel):
         if selected_company and selected_company.id not in allowed_companies.ids:
             selected_company = self.env['res.company']
             company_id = False
-        start, end = self._accounting_period_bounds(period, today)
         previous_start, previous_end = self._accounting_comparison_bounds(start, end, comparison)
         start_value = fields.Date.to_string(start)
         end_value = fields.Date.to_string(end)
@@ -242,6 +240,8 @@ class PrimetechAccountingDashboard(models.AbstractModel):
         unposted_journals = Move.search_count([('state', '=', 'draft'), ('date', '>=', start_value), ('date', '<=', end_value)] + company_domain)
         period_options = [{'value': value, 'label': label} for value, label in [('today', "Aujourd'hui"), ('week', 'Cette semaine'), ('month', 'Ce mois'), ('quarter', 'Ce trimestre'), ('year', 'Cette année')]]
         comparison_options = [{'value': value, 'label': label} for value, label in [('previous_period', 'Période précédente'), ('previous_year', 'Même période N-1'), ('none', 'Sans comparaison')]]
+        period_options = [option for option in period_options if option['value'] != 'quarter']
+        period_options.append({'value': 'custom', 'label': 'Période'})
         return {
             'today': fields.Date.to_string(today), 'updated_at': fields.Datetime.now().strftime('%d/%m/%Y %H:%M'),
             'filters': {'company_id': company_id or '', 'period': period, 'comparison': comparison, 'date_from': start_value, 'date_to': end_value, 'period_label': dict((option['value'], option['label']) for option in period_options).get(period, 'Ce mois'), 'comparison_label': dict((option['value'], option['label']) for option in comparison_options).get(comparison, 'Période précédente'), 'companies': [{'id': company.id, 'name': company.display_name} for company in allowed_companies], 'periods': period_options, 'comparisons': comparison_options},

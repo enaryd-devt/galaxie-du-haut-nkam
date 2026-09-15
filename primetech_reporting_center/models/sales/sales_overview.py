@@ -2,29 +2,27 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from odoo import api, models
 
+from ..date_range import DashboardDateRange
+
 
 class SalesOverview(models.AbstractModel):
     _name = 'primetech.sales.overview'
     _description = 'Sales Overview Dashboard'
 
-    def _period_start(self, period, today):
-        starts = {
-            'week': today - timedelta(days=today.weekday()),
-            'month': today.replace(day=1),
-            'quarter': today.replace(month=((today.month - 1) // 3) * 3 + 1, day=1),
-            'year': today.replace(month=1, day=1),
-        }
-        return starts.get(period, starts['year'])
+    def _period_bounds(self, filters, today):
+        return DashboardDateRange.resolve(filters, today)
 
     @api.model
     def get_dashboard_data(self, filters=None):
         filters = filters or {}
         today = date.today()
-        start = self._period_start(filters.get('period', 'month'), today)
+        period, start, end = self._period_bounds(filters, today)
         start_value = start.isoformat()
+        end_value = end.isoformat()
+        end_exclusive_value = (end + timedelta(days=1)).isoformat()
         alert_date = today + timedelta(days=7)
-        invoice_domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('invoice_date', '>=', start_value)]
-        order_domain = [('date_order', '>=', start_value)]
+        invoice_domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('invoice_date', '>=', start_value), ('invoice_date', '<=', end_value)]
+        order_domain = [('date_order', '>=', start_value), ('date_order', '<', end_exclusive_value)]
         invoices = self.env['account.move'].search(invoice_domain)
         def line_margin(line):
             return line.margin if 'margin' in line._fields else 0.0
@@ -46,8 +44,8 @@ class SalesOverview(models.AbstractModel):
         quotation_count = len(orders.filtered(lambda order: order.state in ['draft', 'sent']))
         conversion_rate = len(confirmed_orders) / (quotation_count + len(confirmed_orders)) * 100 if quotation_count or confirmed_orders else 0.0
 
-        prev_start = start - (today - start) - timedelta(days=1)
-        prev_invoice_domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('invoice_date', '>=', prev_start.isoformat()), ('invoice_date', '<', start_value)]
+        prev_start, prev_end = DashboardDateRange.previous_bounds(start, end)
+        prev_invoice_domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('invoice_date', '>=', prev_start.isoformat()), ('invoice_date', '<=', prev_end.isoformat())]
         prev_invoices = self.env['account.move'].search(prev_invoice_domain)
         previous_turnover = sum(prev_invoices.mapped('amount_untaxed'))
         previous_invoiced = sum(prev_invoices.mapped('amount_total'))
@@ -119,7 +117,7 @@ class SalesOverview(models.AbstractModel):
         evolution = [{'month': key, **vals} for key, vals in sorted(monthly_sales.items())]
 
         return {
-            'today': today.isoformat(), 'alert_date': alert_date.isoformat(), 'updated_at': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'today': today.isoformat(), 'date_from': start_value, 'date_to': end_value, 'period': period, 'alert_date': alert_date.isoformat(), 'updated_at': datetime.now().strftime('%d/%m/%Y %H:%M'),
             'turnover_ht': turnover_ht, 'turnover_ttc': turnover_ttc, 'paid_amount': paid_amount, 'margin_amount': margin_amount,
             'turnover_previous_month': previous_turnover, 'previous_invoiced': previous_invoiced, 'previous_paid': previous_paid, 'previous_margin': previous_margin,
             'growth_rate': growth(turnover_ht, previous_turnover), 'invoiced_growth': growth(turnover_ttc, previous_invoiced), 'paid_growth': growth(paid_amount, previous_paid),

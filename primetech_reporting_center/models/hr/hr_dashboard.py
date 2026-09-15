@@ -4,6 +4,8 @@ from datetime import timedelta
 
 from odoo import api, fields, models
 
+from ..date_range import DashboardDateRange
+
 
 class PrimetechHRDashboard(models.AbstractModel):
     _name = "primetech.hr.dashboard"
@@ -15,16 +17,11 @@ class PrimetechHRDashboard(models.AbstractModel):
         Employee = self.env["hr.employee"]
         Department = self.env["hr.department"]
         today = fields.Date.today()
-        period = filters.get("period", "month")
-        starts = {
-            "week": today - timedelta(days=today.weekday()),
-            "month": today.replace(day=1),
-            "quarter": today.replace(month=((today.month - 1) // 3) * 3 + 1, day=1),
-            "year": today.replace(month=1, day=1),
-        }
-        start = starts.get(period, starts["month"])
+        period, start, end = DashboardDateRange.resolve(filters, today)
         start_value = fields.Date.to_string(start)
-        previous_start = start - (today - start) - timedelta(days=1)
+        end_value = fields.Date.to_string(end)
+        end_exclusive_value = fields.Date.to_string(end + timedelta(days=1))
+        previous_start, _previous_end = DashboardDateRange.previous_bounds(start, end)
         previous_start_value = fields.Date.to_string(previous_start)
         alert_date = today + timedelta(days=30)
         department_id = filters.get("department_id")
@@ -32,9 +29,10 @@ class PrimetechHRDashboard(models.AbstractModel):
         if department_id:
             employee_domain.append(("department_id", "=", int(department_id)))
 
-        employees = Employee.search(employee_domain)
+        employee_period_domain = employee_domain + [("create_date", "<", end_exclusive_value)]
+        employees = Employee.search(employee_period_domain)
         active_employees = employees.filtered(lambda employee: getattr(employee, "active", True))
-        previous_employees = max(len(employees) - Employee.search_count(employee_domain + [("create_date", ">=", start_value)]), 0)
+        previous_employees = Employee.search_count(employee_domain + [("create_date", "<", start_value)])
 
         def growth(current, previous):
             return round((current - previous) / previous * 100, 1) if previous else 0.0
@@ -49,7 +47,7 @@ class PrimetechHRDashboard(models.AbstractModel):
         incomplete_attendances = 0
         if attendance_supported:
             Attendance = self.env["hr.attendance"]
-            attendance_domain = [("check_in", ">=", fields.Datetime.to_string(today))]
+            attendance_domain = [("check_in", ">=", start_value), ("check_in", "<", end_exclusive_value)]
             if department_id:
                 attendance_domain.append(("employee_id.department_id", "=", int(department_id)))
             today_attendances = Attendance.search(attendance_domain)
@@ -73,6 +71,10 @@ class PrimetechHRDashboard(models.AbstractModel):
             base_leave_domain = []
             if department_id:
                 base_leave_domain.append(("employee_id.department_id", "=", int(department_id)))
+            if "request_date_from" in Leave._fields:
+                base_leave_domain += [("request_date_from", "<=", end_value), ("request_date_to", ">=", start_value)]
+            else:
+                base_leave_domain += [("date_from", "<", end_exclusive_value), ("date_to", ">=", start_value)]
             leave_validated = Leave.search_count(base_leave_domain + [("state", "=", "validate")])
             leave_pending = Leave.search_count(base_leave_domain + [("state", "in", ("confirm", "validate1"))])
             leave_running = Leave.search_count(base_leave_domain + [("state", "in", ("confirm", "validate1"))])
@@ -99,7 +101,7 @@ class PrimetechHRDashboard(models.AbstractModel):
         payroll_mass = previous_payroll_mass = 0.0
         if payroll_supported:
             Payslip = self.env["hr.payslip"]
-            payslip_domain = [("date_from", ">=", start_value)]
+            payslip_domain = [("date_from", "<=", end_value), ("date_to", ">=", start_value)]
             if department_id:
                 payslip_domain.append(("employee_id.department_id", "=", int(department_id)))
             payslips = Payslip.search(payslip_domain)
@@ -112,16 +114,16 @@ class PrimetechHRDashboard(models.AbstractModel):
         else:
             payroll["to_generate"] = len(active_employees)
 
-        new_hires = Employee.search_count(employee_domain + [("create_date", ">=", start_value)])
+        new_hires = Employee.search_count(employee_domain + [("create_date", ">=", start_value), ("create_date", "<", end_exclusive_value)])
         previous_new_hires = Employee.search_count(employee_domain + [("create_date", ">=", previous_start_value), ("create_date", "<", start_value)])
-        departures = Employee.search_count(employee_domain + [("active", "=", False), ("write_date", ">=", start_value)]) if "active" in Employee._fields else 0
+        departures = Employee.search_count(employee_domain + [("active", "=", False), ("write_date", ">=", start_value), ("write_date", "<", end_exclusive_value)]) if "active" in Employee._fields else 0
         previous_departures = max(departures - 1, 0)
 
         department_cards = []
         presence_by_department = []
         total_employees = max(len(employees), 1)
         for department in Department.search([], limit=6):
-            department_employees = Employee.search(employee_domain + [("department_id", "=", department.id)])
+            department_employees = Employee.search(employee_period_domain + [("department_id", "=", department.id)])
             count = len(department_employees)
             if not count:
                 continue
@@ -132,7 +134,7 @@ class PrimetechHRDashboard(models.AbstractModel):
         department_cards.sort(key=lambda item: item["count"], reverse=True)
 
         return {
-            "period_start": start_value, "alert_date": fields.Date.to_string(alert_date), "updated_at": fields.Datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "period_start": start_value, "period_end": end_value, "period": period, "alert_date": fields.Date.to_string(alert_date), "updated_at": fields.Datetime.now().strftime("%d/%m/%Y %H:%M"),
             "employees": len(employees), "previous_employees": previous_employees, "employee_growth": growth(len(employees), previous_employees), "active_employees": len(active_employees),
             "attendance_today": attendance_today, "previous_attendance_today": previous_attendance_today, "attendance_growth": growth(attendance_today, previous_attendance_today), "attendance_rate": attendance_rate,
             "absent_today": absent_today, "previous_absent_today": previous_absent_today, "absent_growth": growth(absent_today, previous_absent_today), "absent_employee_ids": absent_employee_ids,
@@ -143,5 +145,5 @@ class PrimetechHRDashboard(models.AbstractModel):
             "contracts": contracts, "contracts_to_renew": contracts_to_renew, "contracts_expiring": contracts_expiring, "trials_expiring": trials_expiring, "no_contract": no_contract, "no_contract_employee_ids": no_contract_employee_ids,
             "department_cards": department_cards, "presence_by_department": presence_by_department,
             "alerts": {"contracts_expiring": contracts_expiring, "leave_pending": leave_pending, "incomplete_attendances": incomplete_attendances, "unjustified_absences": absent_today, "employees_late": no_contract},
-            "domains": {"employees": employee_domain, "contracts": [], "leaves": [], "attendances": [], "payslips": []},
+            "domains": {"employees": employee_period_domain, "contracts": [], "leaves": base_leave_domain if leaves_supported else [], "attendances": attendance_domain if attendance_supported else [], "payslips": payslip_domain if payroll_supported else []},
         }

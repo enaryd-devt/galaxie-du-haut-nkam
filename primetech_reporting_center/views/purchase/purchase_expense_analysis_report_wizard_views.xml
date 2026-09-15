@@ -71,7 +71,7 @@
             </group>
           </group>
           <group string="Fournisseurs">
-            <field name="supplier_ids" widget="many2many_tags" options="{'color_field': false}"/>
+            <field name="supplier_ids" widget="many2many_tags" options="{'no_create': True}"/>
           </group>
         </sheet>
         <!-- ===================================== -->

@@ -1,23 +1,31 @@
 # -*- coding: utf-8 -*-
 {
     "name": "PrimeTech Reporting Center",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Reporting",
-    "summary": "Centre de reporting et d'impression",
+    "summary": "Tableaux de bord et rapports PDF/XLSX pour piloter l'entreprise",
     "description": """
 PrimeTech Reporting Center
 ===========================================================
-Centre centralisé de reporting :
-- Comptabilité
-- Vente
-- Achat
-- Stock
-- RH
-- Impression
+Centre de pilotage centralisé pour Odoo 18 :
+
+* tableaux de bord exécutif, comptable, commercial, achats, stock et RH ;
+* rapports métier avec filtres, aperçu à l'écran et exports PDF/XLSX ;
+* états comptables OHADA, analyses des ventes, achats et mouvements de stock ;
+* droits d'accès par domaine et profils métier ;
+* paramètres de seuils de stock et de présentation des indicateurs.
+
+Le module exploite en lecture les données des applications Odoo déjà installées.
+Il n'altère pas leurs processus de saisie, de validation ou de comptabilisation.
+Consultez l'onglet « Informations » pour le guide complet d'installation,
+de configuration, d'utilisation, de sécurité, de mise à jour et de désinstallation.
     """,
     "author": "PrimeTech",
     "website": "https://primetech.cm",
     "license": "LGPL-3",
+    "maintainer": "PrimeTech",
+    "support": "https://primetech.cm",
+    "images": ["static/description/banner.png"],
     "application": True,
     "installable": True,
 
@@ -26,10 +34,15 @@ Centre centralisé de reporting :
         "base_setup",
         "web",
         "account",
+        "sale",
+        "sale_stock",
         "purchase",
+        "purchase_stock",
         "stock",
         "point_of_sale",
         "hr",
+        "hr_attendance",
+        "hr_holidays",
         "report_xlsx",
     ],
 
@@ -45,6 +58,7 @@ Centre centralisé de reporting :
         # DASHBOARD (global)
         # =====================================================
         "views/dashboard/dashboard_action.xml",
+        "views/dashboard/dashboard_report_preview_views.xml",
         "views/dashboard/placeholder_action.xml",
         "views/dashboard/audit_event_views.xml",
         "views/settings/res_config_settings_views.xml",
@@ -86,6 +100,12 @@ Centre centralisé de reporting :
         "report/pdf/accounting/invoice_analysis_templates.xml",
         "report/pdf/accounting/cash_period_report.xml",
         "report/pdf/accounting/cash_period_templates.xml",
+        "report/pdf/dashboard/executive_cashflow_report.xml",
+        "report/pdf/dashboard/executive_cashflow_templates.xml",
+        "report/pdf/dashboard/executive_top_watch_report.xml",
+        "report/pdf/dashboard/executive_top_watch_templates.xml",
+        "report/pdf/dashboard/executive_partner_balance_report.xml",
+        "report/pdf/dashboard/executive_partner_balance_templates.xml",
         "report/pdf/accounting/trial_balance_templates.xml",
         "report/pdf/accounting/trial_balance_report.xml",
         "report/pdf/accounting/accounting_journal_templates.xml",

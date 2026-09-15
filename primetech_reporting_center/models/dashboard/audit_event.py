@@ -129,29 +129,167 @@ class PrimetechAuditMixin(models.AbstractModel):
         return result
 
 
+def _audit_document_name(record):
+    return getattr(record, 'name', False) or record.display_name
+
+
+def _audit_after_create(records):
+    if records.env.context.get('primetech_skip_audit'):
+        return
+    for record in records:
+        name = _audit_document_name(record)
+        record.env['primetech.audit.event'].log_event(
+            'create', f"Création — {name}", record._name,
+            res_id=record.id, document_name=name,
+        )
+
+
+def _audit_after_write(records, vals):
+    if not vals or records.env.context.get('primetech_skip_audit'):
+        return
+    labels = [records._fields[name].string for name in vals if name in records._fields]
+    details = 'Champs modifiés : ' + ', '.join(labels[:20])
+    for record in records:
+        name = _audit_document_name(record)
+        record.env['primetech.audit.event'].log_event(
+            'write', f"Modification — {name}", record._name,
+            res_id=record.id, document_name=name, details=details,
+        )
+
+
+def _audit_after_unlink(env, snapshots, model_name):
+    if env.context.get('primetech_skip_audit'):
+        return
+    for res_id, name in snapshots:
+        env['primetech.audit.event'].log_event(
+            'unlink', f"Suppression — {name}", model_name,
+            document_name=name, details=f'Identifiant supprimé : {res_id}',
+        )
+
+
 class AccountMove(models.Model):
-    _name = 'account.move'
-    _inherit = ['account.move', 'primetech.audit.mixin']
+    _inherit = 'account.move'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        _audit_after_create(records)
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if result:
+            _audit_after_write(self, vals)
+        return result
+
+    def unlink(self):
+        snapshots = [(record.id, _audit_document_name(record)) for record in self]
+        model_name = self._name
+        env = self.env
+        result = super().unlink()
+        if result:
+            _audit_after_unlink(env, snapshots, model_name)
+        return result
 
 
 class AccountPayment(models.Model):
-    _name = 'account.payment'
-    _inherit = ['account.payment', 'primetech.audit.mixin']
+    _inherit = 'account.payment'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        _audit_after_create(records)
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if result:
+            _audit_after_write(self, vals)
+        return result
+
+    def unlink(self):
+        snapshots = [(record.id, _audit_document_name(record)) for record in self]
+        model_name = self._name
+        env = self.env
+        result = super().unlink()
+        if result:
+            _audit_after_unlink(env, snapshots, model_name)
+        return result
 
 
 class PurchaseOrder(models.Model):
-    _name = 'purchase.order'
-    _inherit = ['purchase.order', 'primetech.audit.mixin']
+    _inherit = 'purchase.order'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        _audit_after_create(records)
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if result:
+            _audit_after_write(self, vals)
+        return result
+
+    def unlink(self):
+        snapshots = [(record.id, _audit_document_name(record)) for record in self]
+        model_name = self._name
+        env = self.env
+        result = super().unlink()
+        if result:
+            _audit_after_unlink(env, snapshots, model_name)
+        return result
 
 
 class StockPicking(models.Model):
-    _name = 'stock.picking'
-    _inherit = ['stock.picking', 'primetech.audit.mixin']
+    _inherit = 'stock.picking'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        _audit_after_create(records)
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if result:
+            _audit_after_write(self, vals)
+        return result
+
+    def unlink(self):
+        snapshots = [(record.id, _audit_document_name(record)) for record in self]
+        model_name = self._name
+        env = self.env
+        result = super().unlink()
+        if result:
+            _audit_after_unlink(env, snapshots, model_name)
+        return result
 
 
 class PosOrder(models.Model):
-    _name = 'pos.order'
-    _inherit = ['pos.order', 'primetech.audit.mixin']
+    _inherit = 'pos.order'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        _audit_after_create(records)
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if result:
+            _audit_after_write(self, vals)
+        return result
+
+    def unlink(self):
+        snapshots = [(record.id, _audit_document_name(record)) for record in self]
+        model_name = self._name
+        env = self.env
+        result = super().unlink()
+        if result:
+            _audit_after_unlink(env, snapshots, model_name)
+        return result
 
 
 class IrActionsReport(models.Model):

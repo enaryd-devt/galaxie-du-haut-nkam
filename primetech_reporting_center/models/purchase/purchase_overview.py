@@ -1,44 +1,41 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from dateutil.relativedelta import relativedelta
 from odoo import api, models
+
+from ..date_range import DashboardDateRange
 
 
 class PrimetechPurchaseOverview(models.AbstractModel):
     _name = 'primetech.purchase.overview'
     _description = 'Primetech Purchase Overview Dashboard'
 
-    def _period_start(self, period, today):
-        starts = {
-            'week': today - relativedelta(days=today.weekday()),
-            'month': today.replace(day=1),
-            'quarter': today.replace(month=((today.month - 1) // 3) * 3 + 1, day=1),
-            'year': today.replace(month=1, day=1),
-        }
-        return starts.get(period, starts['year'])
+    def _period_bounds(self, filters, today):
+        return DashboardDateRange.resolve(filters, today)
 
     @api.model
     def get_dashboard_data(self, filters=None):
         filters = filters or {}
         today = date.today()
-        start = self._period_start(filters.get('period', 'month'), today)
+        period, start, end = self._period_bounds(filters, today)
         start_value = start.isoformat()
-        previous_start = start - (today - start) - timedelta(days=1)
+        end_value = end.isoformat()
+        end_exclusive_value = (end + timedelta(days=1)).isoformat()
+        previous_start, previous_end = DashboardDateRange.previous_bounds(start, end)
         previous_start_value = previous_start.isoformat()
         PurchaseOrder = self.env['purchase.order']
         AccountMove = self.env['account.move']
         StockPicking = self.env['stock.picking']
-        order_domain = [('date_order', '>=', start_value)]
+        order_domain = [('date_order', '>=', start_value), ('date_order', '<', end_exclusive_value)]
         confirmed_domain = order_domain + [('state', 'in', ['purchase', 'done'])]
-        bill_domain = [('move_type', '=', 'in_invoice'), ('invoice_date', '>=', start_value)]
-        receipt_domain = [('picking_type_code', '=', 'incoming'), ('scheduled_date', '>=', start_value)]
+        bill_domain = [('move_type', '=', 'in_invoice'), ('invoice_date', '>=', start_value), ('invoice_date', '<=', end_value)]
+        receipt_domain = [('picking_type_code', '=', 'incoming'), ('scheduled_date', '>=', start_value), ('scheduled_date', '<', end_exclusive_value)]
         purchase_orders = PurchaseOrder.search(confirmed_domain)
         all_period_orders = PurchaseOrder.search(order_domain)
         vendor_bills = AccountMove.search(bill_domain)
         receipts = StockPicking.search(receipt_domain)
         previous_orders = PurchaseOrder.search([('date_order', '>=', previous_start_value), ('date_order', '<', start_value), ('state', 'in', ['purchase', 'done'])])
-        previous_bills = AccountMove.search([('move_type', '=', 'in_invoice'), ('invoice_date', '>=', previous_start_value), ('invoice_date', '<', start_value)])
+        previous_bills = AccountMove.search([('move_type', '=', 'in_invoice'), ('invoice_date', '>=', previous_start_value), ('invoice_date', '<=', previous_end.isoformat())])
 
         def growth(current, previous):
             return round((current - previous) / previous * 100, 1) if previous else 0.0
@@ -61,7 +58,14 @@ class PrimetechPurchaseOverview(models.AbstractModel):
         if purchase_orders:
             delays = []
             for order in purchase_orders:
-                planned_dates = order.order_line.mapped('date_planned')
+                # Legacy/imported lines may not have a planned date.  Odoo's
+                # mapped() keeps those values as False, which cannot be sorted
+                # alongside datetimes by min().
+                planned_dates = [
+                    line.date_planned
+                    for line in order.order_line
+                    if line.date_planned
+                ]
                 if order.date_order and planned_dates:
                     delays.append(max(0, int((min(planned_dates).date() - order.date_order.date()).days)))
             average_supplier_delay = round(sum(delays) / len(delays), 1) if delays else 0.0
@@ -73,7 +77,7 @@ class PrimetechPurchaseOverview(models.AbstractModel):
             'vendor_requests': len(all_period_orders.filtered(lambda order: order.state in ['draft', 'sent'])),
             'confirmed': purchase_count,
             'to_receive': len(receipts.filtered(lambda picking: picking.state not in ['done', 'cancel'])),
-            'to_bill': AccountMove.search_count([('move_type', '=', 'in_invoice'), ('state', '=', 'draft')]),
+            'to_bill': AccountMove.search_count(bill_domain + [('state', '=', 'draft')]),
         }
 
         supplier_data = []
@@ -126,7 +130,7 @@ class PrimetechPurchaseOverview(models.AbstractModel):
         }
 
         return {
-            'today': today.isoformat(), 'updated_at': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'today': today.isoformat(), 'date_from': start_value, 'date_to': end_value, 'period': period, 'updated_at': datetime.now().strftime('%d/%m/%Y %H:%M'),
             'purchase_count': purchase_count, 'previous_purchase_count': previous_purchase_count, 'supplier_count': supplier_count,
             'total_ht': round(total_ht, 2), 'previous_total_ht': round(previous_total_ht, 2), 'total_ttc': round(total_ttc, 2),
             'billed_amount': round(billed_amount, 2), 'previous_billed_amount': round(previous_billed_amount, 2), 'billed_growth': growth(billed_amount, previous_billed_amount),

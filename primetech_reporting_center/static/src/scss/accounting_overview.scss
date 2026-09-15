@@ -47,6 +47,31 @@
     li:nth-child(2) b { background: #16a34a; }
     li:nth-child(3) b { background: #f97316; }
     li:nth-child(4) b { background: #f59e0b; }
+
+    .pt-accounting-treasury-chart { height: 230px; contain: layout paint; }
+
+    .pt-accounting-availability-layout { align-items: start; }
+    .pt-accounting-fixed-diagram { position: sticky; top: 12px; align-self: start; }
+    .pt-accounting-availability-legend {
+        max-height: 13.5rem;
+        overflow-y: auto;
+        padding-right: 6px;
+        scrollbar-color: #b7c6da transparent;
+        scrollbar-width: thin;
+    }
+    .pt-accounting-availability-legend::-webkit-scrollbar { width: 5px; }
+    .pt-accounting-availability-legend::-webkit-scrollbar-thumb { background: #b7c6da; border-radius: 99px; }
+    .pt-accounting-availability-legend li { min-height: 27px; padding: 6px 0; }
+    .pt-accounting-availability-legend li + li { border-top: 1px solid #edf2f7; }
+    .pt-accounting-availability-legend li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pt-accounting-availability-legend li strong { white-space: nowrap; }
+
+    .pt-accounting-aging-layout { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+    .pt-accounting-aging-layout .pt-accounting-donut { align-self: center; height: 182px; width: 182px; }
+    .pt-accounting-aging-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; row-gap: 2px; }
+    .pt-accounting-aging-legend li { min-width: 0; padding: 7px 4px; border-top: 1px solid #edf2f7; }
+    .pt-accounting-aging-legend li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pt-accounting-aging-legend li strong { font-size: 10px; white-space: nowrap; }
     li:nth-child(5) b { background: #7c3aed; }
 
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -62,5 +87,12 @@
     .pt-accounting-alerts i { margin-right: 8px; }
 
     @media (max-width: 1400px) { .pt-accounting-kpis { grid-template-columns: repeat(3, 1fr); } .pt-accounting-grid-top, .pt-accounting-grid-bottom { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) { .pt-accounting-filters { flex-wrap: wrap; } .pt-accounting-kpis { grid-template-columns: 1fr; } .pt-accounting-chart-list { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+        .pt-accounting-filters { flex-wrap: wrap; }
+        .pt-accounting-kpis { grid-template-columns: 1fr; }
+        .pt-accounting-chart-list { grid-template-columns: 1fr; }
+        .pt-accounting-fixed-diagram { position: static; justify-self: center; }
+        .pt-accounting-availability-legend { max-height: 13.8rem; }
+        .pt-accounting-aging-legend { grid-template-columns: 1fr; }
+    }
 }

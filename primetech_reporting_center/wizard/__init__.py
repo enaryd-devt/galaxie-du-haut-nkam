@@ -3,3 +3,4 @@ from . import sales
 from . import purchase
 from . import stock
 from . import hr
+from . import dashboard

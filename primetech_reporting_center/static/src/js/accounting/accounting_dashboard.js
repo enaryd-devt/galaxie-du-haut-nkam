@@ -1,23 +1,43 @@
 /** @odoo-module **/
-import { Component, onMounted, onWillStart, useState } from "@odoo/owl";
+import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { getDefaultCustomDateRange, getGlobalDateFilter, globalDateFilterPayload, setGlobalDateFilter, subscribeToGlobalDateFilter } from "../services/dashboard_state_service";
 
 export class AccountingDashboard extends Component {
     static props = { "*": true };
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
-        this.state = useState({ loading: true, filters: { company_id: "", period: "month", comparison: "previous_period" }, data: {} });
+        const dateFilter = getGlobalDateFilter();
+        this.state = useState({ loading: true, dateFilter, filters: { company_id: "", period: dateFilter.period, comparison: "previous_period" }, data: {} });
         onWillStart(() => this.loadData());
-        onMounted(() => setTimeout(() => this.renderCharts(), 100));
+        onMounted(() => {
+            this._unsubscribeGlobalDateFilter = subscribeToGlobalDateFilter((filter) => {
+                if (!this.isCurrentGlobalDateFilter(filter)) this.applyGlobalDateFilter(filter);
+            });
+            this.scheduleChartRender();
+        });
+        onWillUnmount(() => {
+            this._unsubscribeGlobalDateFilter?.();
+            if (this._chartRenderFrame) cancelAnimationFrame(this._chartRenderFrame);
+        });
     }
 
     async loadData() {
         this.state.loading = true;
-        this.state.data = await this.orm.call("primetech.accounting.dashboard", "get_overview_data", [this.state.filters]);
+        const filters = { ...this.state.filters, ...globalDateFilterPayload(this.state.dateFilter) };
+        this.state.data = await this.orm.call("primetech.accounting.dashboard", "get_overview_data", [filters]);
         this.state.filters = { ...this.state.filters, ...(this.state.data.filters || {}) };
         this.state.loading = false;
-        setTimeout(() => this.renderCharts(), 0);
+        this.scheduleChartRender();
+    }
+
+    scheduleChartRender() {
+        if (this._chartRenderFrame) cancelAnimationFrame(this._chartRenderFrame);
+        this._chartRenderFrame = requestAnimationFrame(() => {
+            this._chartRenderFrame = null;
+            this.renderCharts();
+        });
     }
 
     async onFilterChange(key, ev) {
@@ -25,8 +45,34 @@ export class AccountingDashboard extends Component {
         await this.loadData();
     }
 
-    async onPeriodChange(ev) {
-        await this.onFilterChange("period", ev);
+    isCurrentGlobalDateFilter(filter) {
+        return ["period", "dateFrom", "dateTo"].every((key) => this.state.dateFilter[key] === filter[key]);
+    }
+
+    async applyGlobalDateFilter(filter) {
+        this.state.dateFilter = { ...filter };
+        this.state.filters.period = filter.period;
+        await this.loadData();
+    }
+
+    async onGlobalPeriodChange(ev) {
+        let next = { ...this.state.dateFilter, period: ev.target.value };
+        if (next.period === "custom" && (!next.dateFrom || !next.dateTo)) {
+            next = { ...next, ...getDefaultCustomDateRange() };
+        }
+        this.state.dateFilter = next;
+        this.state.filters.period = next.period;
+        setGlobalDateFilter(next);
+        await this.loadData();
+    }
+
+    async onGlobalDateChange(field, ev) {
+        const next = { ...this.state.dateFilter, [field]: ev.target.value };
+        this.state.dateFilter = next;
+        if (next.dateFrom && next.dateTo && next.dateFrom <= next.dateTo) {
+            setGlobalDateFilter(next);
+            await this.loadData();
+        }
     }
 
     async onCompanyChange(ev) {
@@ -90,7 +136,30 @@ export class AccountingDashboard extends Component {
         const existing = Chart.getChart(canvas);
         if (existing) existing.destroy();
         const rows = this.state.data.treasury_evolution || [];
-        new Chart(canvas, { type: "line", data: { labels: rows.map((row) => row.label), datasets: [{ label: "Encaissements", data: rows.map((row) => row.incoming), borderColor: "#2563eb", backgroundColor: "#2563eb", tension: 0.35 }, { label: "Décaissements", data: rows.map((row) => row.outgoing), borderColor: "#ef4444", backgroundColor: "#ef4444", tension: 0.35 }, { label: "Solde cumulé", data: rows.map((row) => row.balance), borderColor: "#16a34a", backgroundColor: "#16a34a", tension: 0.35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "top", align: "start" } } } });
+        new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: rows.map((row) => row.label),
+                datasets: [
+                    { type: "bar", label: "Encaissements", data: rows.map((row) => row.incoming), backgroundColor: "#60a5fa", borderRadius: 3, borderSkipped: false, barPercentage: .72, categoryPercentage: .72 },
+                    { type: "bar", label: "Décaissements", data: rows.map((row) => -(row.outgoing || 0)), backgroundColor: "#fda4af", borderRadius: 3, borderSkipped: false, barPercentage: .72, categoryPercentage: .72 },
+                    { type: "line", label: "Solde cumulé", data: rows.map((row) => row.balance), borderColor: "#08965a", backgroundColor: "rgba(8, 150, 90, .11)", fill: true, tension: .28, borderWidth: 2, pointRadius: 0, pointHoverRadius: 3 },
+                ],
+            },
+            options: {
+                animation: false,
+                parsing: false,
+                normalized: true,
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: "index" },
+                plugins: { legend: { position: "top", align: "start", labels: { boxWidth: 8, boxHeight: 8, padding: 10, font: { size: 10 } } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 8, font: { size: 9 } } },
+                    y: { grid: { color: "rgba(148, 163, 184, .18)" }, ticks: { maxTicksLimit: 4, font: { size: 9 } } },
+                },
+            },
+        });
     }
 
     renderCashChart() {
@@ -99,7 +168,7 @@ export class AccountingDashboard extends Component {
         const existing = Chart.getChart(canvas);
         if (existing) existing.destroy();
         const rows = this.state.data.cash_accounts || [];
-        new Chart(canvas, { type: "doughnut", data: { labels: rows.map((row) => row.name), datasets: [{ data: rows.map((row) => row.amount), backgroundColor: ["#2563eb", "#16a34a", "#f97316", "#f59e0b"], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: "58%", plugins: { legend: { position: "right", labels: { boxWidth: 10, font: { size: 10 } } } } } });
+        new Chart(canvas, { type: "doughnut", data: { labels: rows.map((row) => row.name), datasets: [{ data: rows.map((row) => row.amount), backgroundColor: ["#2563eb", "#16a34a", "#f97316", "#f59e0b", "#7c3aed", "#0891b2", "#e11d48", "#64748b"], borderWidth: 0 }] }, options: { animation: false, parsing: false, normalized: true, events: [], responsive: true, maintainAspectRatio: false, cutout: "58%", plugins: { legend: { display: false } } } });
     }
 
     renderAgeChart() {
@@ -108,7 +177,7 @@ export class AccountingDashboard extends Component {
         const existing = Chart.getChart(canvas);
         if (existing) existing.destroy();
         const rows = this.state.data.receivable_aging || [];
-        new Chart(canvas, { type: "doughnut", data: { labels: rows.map((row) => row.label), datasets: [{ data: rows.map((row) => row.amount), backgroundColor: ["#2563eb", "#f59e0b", "#ef4444", "#7c3aed"], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: "58%", plugins: { legend: { position: "right", labels: { boxWidth: 10, font: { size: 10 } } } } } });
+        new Chart(canvas, { type: "doughnut", data: { labels: rows.map((row) => row.label), datasets: [{ data: rows.map((row) => row.amount), backgroundColor: ["#2563eb", "#f59e0b", "#ef4444", "#7c3aed"], borderWidth: 0 }] }, options: { animation: false, parsing: false, normalized: true, events: [], responsive: true, maintainAspectRatio: false, cutout: "58%", plugins: { legend: { display: false } } } });
     }
 }
 AccountingDashboard.template = "primetech_reporting_center.AccountingDashboard";
