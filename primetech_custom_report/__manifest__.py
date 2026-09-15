@@ -1,9 +1,14 @@
 {
     'name': 'PrimeTech Reports custom',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.3',
     'summary': 'Custom layout report for Odoo 18',
     'author': 'PrimeTech',
-    'depends': ['account', 'stock'],
+    'depends': [
+        'sale_management',
+        'sale_stock',
+        'account',
+        'product',
+    ],
     'data': [
         "views/custom_report_invoice.xml",
         "views/inventory_count_report.xml",
