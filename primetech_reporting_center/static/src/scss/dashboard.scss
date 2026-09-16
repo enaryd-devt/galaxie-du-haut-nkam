@@ -6966,8 +6966,8 @@
     }
 
     .stores .pt-eb-stores-scroll {
-        max-height: 28.75rem; // 10 lignes enrichies, le reste reste accessible au défilement.
-        min-height: 28.75rem;
+        // Conserve la hauteur historique de la carte : la liste défile sans agrandir la grille.
+        max-height: 10.95rem;
         margin-top: .4rem;
         padding-right: .2rem;
 
@@ -7007,9 +7007,9 @@
             width: 1.35rem;
         }
         .pt-eb-store-main { min-width: 0; }
-        .pt-eb-store-title { display: flex; gap: .14rem .35rem; justify-content: space-between; min-width: 0; }
-        .pt-eb-store-title strong { color: #102650; font-size: .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .pt-eb-store-title small { color: #657b9d; flex: 0 0 auto; font-size: .56rem; white-space: nowrap; }
+        .pt-eb-store-title { display: block; min-width: 0; }
+        .pt-eb-store-title strong { color: #102650; display: block; font-size: .7rem; line-height: 1.18; overflow: visible; text-overflow: clip; white-space: normal; }
+        .pt-eb-store-title small { color: #657b9d; display: block; font-size: .56rem; margin-top: .12rem; white-space: nowrap; }
         .pt-eb-store-bar { background: #e9eff6; border-radius: 99px; height: .28rem; margin-top: .32rem; overflow: hidden; }
         .pt-eb-store-bar .bar { display: block; height: 100%; }
         .pt-eb-store-metrics { min-width: 0; text-align: right; }
@@ -7361,7 +7361,7 @@
 @media (max-width: 760px) {
     .pt-exec-board {
         .stores .pt-eb-stores-scroll {
-            max-height: 29rem;
+            max-height: 11.3rem;
             min-height: 0;
 
             .pt-eb-store {
