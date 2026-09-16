@@ -6966,8 +6966,9 @@
     }
 
     .stores .pt-eb-stores-scroll {
-        // Conserve la hauteur historique de la carte : la liste défile sans agrandir la grille.
-        max-height: 10.95rem;
+        // Six lignes enrichies restent visibles ; les suivantes défilent verticalement.
+        max-height: 14.4rem;
+        min-height: 14.4rem;
         margin-top: .4rem;
         padding-right: .2rem;
 
@@ -7361,7 +7362,7 @@
 @media (max-width: 760px) {
     .pt-exec-board {
         .stores .pt-eb-stores-scroll {
-            max-height: 11.3rem;
+            max-height: 14.8rem;
             min-height: 0;
 
             .pt-eb-store {
