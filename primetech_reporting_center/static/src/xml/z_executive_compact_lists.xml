@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-inherit="primetech_reporting_center.ExecutiveBoard" t-inherit-mode="extension" owl="1">
-        <xpath expr="//section[@data-scroll-key='main-analysis']/article[contains(@class, 'stores')]/t[@t-foreach='state.stores']" position="replace">
-            <div class="pt-eb-card-list-scroll pt-eb-stores-scroll">
-                <t t-foreach="state.stores" t-as="store" t-key="store.name">
-                    <div class="pt-eb-store" t-on-click="() => this.openAction(store.action)"><span><t t-esc="store.name"/></span><div><b t-att-class="'bar tone-' + store.tone" t-att-style="'width:' + store.percent + '%'"/></div><strong><t t-esc="format(store.value, 'FCFA')"/></strong></div>
-                </t>
-            </div>
-        </xpath>
-
         <xpath expr="//section[@data-scroll-key='main-analysis']//section[@class='pt-category-rows']" position="replace">
             <section class="pt-category-rows pt-eb-card-list-scroll pt-eb-categories-scroll">
                 <t t-foreach="state.categories.items.slice(0, 5)" t-as="cat" t-key="cat.name"><button t-on-click="() => this.openAction(cat.action)"><span class="pt-category-name"><i/><t t-esc="cat.name"/></span><b><t t-esc="Math.round(cat.percent)"/>%</b><em><i t-att-style="'width:' + cat.percent + '%'"/></em><small><t t-esc="format(cat.value, 'FCFA')"/></small></button></t>
