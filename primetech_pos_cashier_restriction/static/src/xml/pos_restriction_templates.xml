@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="primetech_pos_cashier_restriction.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//DropdownItem[@onSelected=&quot;() =&gt; this.pos.showScreen('TicketScreen')&quot;]" position="attributes">
+            <attribute name="onSelected">() =&gt; this.pos.primetechOpenOrders()</attribute>
+        </xpath>
+    </t>
+
+    <t t-name="primetech_pos_cashier_restriction.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//button[.//i[contains(@class, 'fa-undo')]]" position="attributes">
+            <attribute name="t-if">pos.primetechCanRefund()</attribute>
+        </xpath>
+    </t>
+
+    <t t-name="primetech_pos_cashier_restriction.TicketScreen" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension">
+        <xpath expr="//ActionpadWidget[@actionName.translate='Refund']" position="attributes">
+            <attribute name="t-if">pos.primetechCanRefund()</attribute>
+        </xpath>
+    </t>
+</templates>

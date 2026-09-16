@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pos_restriction_audit_manager,pos.restriction.audit.manager,model_pos_restriction_audit,point_of_sale.group_pos_manager,1,0,0,0
+access_pos_restriction_audit_system,pos.restriction.audit.system,model_pos_restriction_audit,base.group_system,1,1,1,1

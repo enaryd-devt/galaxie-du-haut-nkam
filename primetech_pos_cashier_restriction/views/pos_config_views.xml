@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_config_view_form_cashier_security" model="ir.ui.view">
+        <field name="name">pos.config.form.cashier.security</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='module_pos_hr']/ancestor::setting[1]" position="after">
+                <setting string="Sécurité des caissiers" help="Restreindre l'historique POS et les remboursements pour les caissiers restreints">
+                    <div class="content-group">
+                        <div class="row mt16">
+                            <label for="restricted_employee_ids" string="Caissiers restreints" class="col-lg-5 o_light_label"/>
+                            <field name="restricted_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="order_access_employee_ids" string="Commandes sans remboursement" class="col-lg-5 o_light_label"/>
+                            <field name="order_access_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="refund_manager_employee_ids" string="Responsables / remboursement" class="col-lg-5 o_light_label"/>
+                            <field name="refund_manager_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_cashier_security" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.pos.cashier.security</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='pos_interface_section']" position="after">
+                <block title="Sécurité des caissiers" id="pos_cashier_security_section">
+                    <setting string="Caissiers restreints" help="Vente et encaissement uniquement. Les commandes, impressions et remboursements sont bloqués.">
+                        <field name="pos_restricted_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                    </setting>
+                    <setting string="Commandes sans remboursement" help="Consultation et impression des commandes autorisées, remboursement bloqué.">
+                        <field name="pos_order_access_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                    </setting>
+                    <setting string="Responsables / remboursement" help="Accès complet aux commandes, impressions et remboursements.">
+                        <field name="pos_refund_manager_employee_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
