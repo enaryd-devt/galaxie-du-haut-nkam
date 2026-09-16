@@ -6966,20 +6966,56 @@
     }
 
     .stores .pt-eb-stores-scroll {
-        max-height: 10.95rem; // 7 lignes compactes
+        max-height: 28.75rem; // 10 lignes enrichies, le reste reste accessible au défilement.
+        min-height: 28.75rem;
         margin-top: .4rem;
         padding-right: .2rem;
 
         .pt-eb-store {
-            grid-template-columns: minmax(0, 6.3rem) minmax(2.5rem, 1fr) minmax(4.4rem, auto);
-            gap: .38rem;
+            align-items: center;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1.55rem minmax(0, 1fr) minmax(6.9rem, auto);
+            gap: .55rem;
             margin-top: 0;
-            padding: .39rem .08rem;
+            padding: .48rem .1rem;
+            text-align: left;
+            width: 100%;
         }
 
         .pt-eb-store + .pt-eb-store { border-top: 1px solid #eef2f7; }
-        .pt-eb-store span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .pt-eb-store strong { font-size: .63rem; }
+        .pt-eb-store > .pt-eb-store-main,
+        .pt-eb-store-title,
+        .pt-eb-store-metrics {
+            background: transparent;
+            border-radius: 0;
+            height: auto;
+            overflow: visible;
+        }
+        .pt-eb-store-rank {
+            align-items: center;
+            background: #edf4ff;
+            border-radius: 50%;
+            color: #2864b4;
+            display: inline-flex;
+            font-size: .63rem;
+            font-weight: 800;
+            height: 1.35rem;
+            justify-content: center;
+            width: 1.35rem;
+        }
+        .pt-eb-store-main { min-width: 0; }
+        .pt-eb-store-title { display: flex; gap: .14rem .35rem; justify-content: space-between; min-width: 0; }
+        .pt-eb-store-title strong { color: #102650; font-size: .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pt-eb-store-title small { color: #657b9d; flex: 0 0 auto; font-size: .56rem; white-space: nowrap; }
+        .pt-eb-store-bar { background: #e9eff6; border-radius: 99px; height: .28rem; margin-top: .32rem; overflow: hidden; }
+        .pt-eb-store-bar .bar { display: block; height: 100%; }
+        .pt-eb-store-metrics { min-width: 0; text-align: right; }
+        .pt-eb-store-metrics strong { color: #102650; display: block; font-size: .7rem; white-space: nowrap; }
+        .pt-eb-store-metrics small { color: #4d70a5; display: block; font-size: .54rem; margin-top: .08rem; white-space: nowrap; }
+        .pt-eb-store-empty { color: #657b9d; font-size: .72rem; margin: 1rem 0; text-align: center; }
     }
 
     .pt-category-rows.pt-eb-categories-scroll {
@@ -7324,7 +7360,24 @@
 
 @media (max-width: 760px) {
     .pt-exec-board {
-        .stores .pt-eb-stores-scroll { max-height: 11.3rem; }
+        .stores .pt-eb-stores-scroll {
+            max-height: 29rem;
+            min-height: 0;
+
+            .pt-eb-store {
+                grid-template-columns: 1.55rem minmax(0, 1fr);
+                padding: .58rem .08rem;
+            }
+
+            .pt-eb-store-title { display: block; }
+            .pt-eb-store-title strong,
+            .pt-eb-store-title small { display: block; }
+            .pt-eb-store-title strong { font-size: .74rem; }
+            .pt-eb-store-title small { font-size: .6rem; margin-top: .15rem; overflow: hidden; text-overflow: ellipsis; }
+            .pt-eb-store-metrics { align-items: baseline; display: flex; gap: .35rem; grid-column: 2; text-align: left; }
+            .pt-eb-store-metrics strong { font-size: .74rem; }
+            .pt-eb-store-metrics small { font-size: .58rem; }
+        }
         /* La situation des caisses utilise toute la largeur de sa carte. */
         .pt-eb-grid-secondary > .pt-eb-card:first-child .pt-eb-cash-scroll {
             width: 100%;
