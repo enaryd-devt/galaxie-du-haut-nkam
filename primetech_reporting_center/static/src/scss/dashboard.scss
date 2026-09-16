@@ -6967,8 +6967,8 @@
 
     .stores .pt-eb-stores-scroll {
         // Six lignes enrichies restent visibles ; les suivantes défilent verticalement.
-        max-height: 14.4rem;
-        min-height: 14.4rem;
+        max-height: 20rem;
+        min-height: 20rem;
         margin-top: .4rem;
         padding-right: .2rem;
 
@@ -6978,10 +6978,10 @@
             border: 0;
             cursor: pointer;
             display: grid;
-            grid-template-columns: 1.55rem minmax(0, 1fr) minmax(6.9rem, auto);
-            gap: .55rem;
+            grid-template-columns: 1.25rem minmax(0, 1fr) minmax(5.75rem, auto);
+            gap: .35rem;
             margin-top: 0;
-            padding: .48rem .1rem;
+            padding: .34rem .06rem;
             text-align: left;
             width: 100%;
         }
@@ -7003,19 +7003,19 @@
             display: inline-flex;
             font-size: .63rem;
             font-weight: 800;
-            height: 1.35rem;
+            height: 1.15rem;
             justify-content: center;
-            width: 1.35rem;
+            width: 1.15rem;
         }
         .pt-eb-store-main { min-width: 0; }
         .pt-eb-store-title { display: block; min-width: 0; }
-        .pt-eb-store-title strong { color: #102650; display: block; font-size: .7rem; line-height: 1.18; overflow: visible; text-overflow: clip; white-space: normal; }
-        .pt-eb-store-title small { color: #657b9d; display: block; font-size: .56rem; margin-top: .12rem; white-space: nowrap; }
-        .pt-eb-store-bar { background: #e9eff6; border-radius: 99px; height: .28rem; margin-top: .32rem; overflow: hidden; }
+        .pt-eb-store-title strong { color: #102650; display: -webkit-box; font-size: .6rem; line-height: 1.15; max-height: 2.3em; overflow: hidden; text-align: left; text-overflow: clip; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+        .pt-eb-store-title small { color: #657b9d; display: block; font-size: .5rem; margin-top: .08rem; white-space: nowrap; }
+        .pt-eb-store-bar { background: #e9eff6; border-radius: 99px; height: .24rem; margin-top: .2rem; overflow: hidden; }
         .pt-eb-store-bar .bar { display: block; height: 100%; }
         .pt-eb-store-metrics { min-width: 0; text-align: right; }
-        .pt-eb-store-metrics strong { color: #102650; display: block; font-size: .7rem; white-space: nowrap; }
-        .pt-eb-store-metrics small { color: #4d70a5; display: block; font-size: .54rem; margin-top: .08rem; white-space: nowrap; }
+        .pt-eb-store-metrics strong { color: #102650; display: block; font-size: .62rem; white-space: nowrap; }
+        .pt-eb-store-metrics small { color: #4d70a5; display: block; font-size: .5rem; margin-top: .05rem; white-space: nowrap; }
         .pt-eb-store-empty { color: #657b9d; font-size: .72rem; margin: 1rem 0; text-align: center; }
     }
 
@@ -7362,7 +7362,7 @@
 @media (max-width: 760px) {
     .pt-exec-board {
         .stores .pt-eb-stores-scroll {
-            max-height: 14.8rem;
+            max-height: 20.4rem;
             min-height: 0;
 
             .pt-eb-store {
