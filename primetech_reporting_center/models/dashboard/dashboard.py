@@ -1181,7 +1181,7 @@ class PrimetechDashboard(models.AbstractModel):
         supplier_payments_action = open_model('Paiements fournisseurs', 'account.payment', supplier_payment_domain)
         cash_lines = overview['cash_registers']['sessions']
         if not cash_lines:
-            cash_lines = [{'name': 'Aucune caisse', 'state': '-', 'user': '-', 'cashier': '-', 'balance': 0, 'current_balance': 0, 'closing_balance': 0, 'orders_total': 0, 'status_class': 'muted', 'action': actions['pos_sessions']}]
+            cash_lines = [{'name': 'Aucune caisse', 'state': '-', 'user': '-', 'cashier': '-', 'opening_date': '-', 'balance': 0, 'current_balance': 0, 'closing_balance': 0, 'orders_total': 0, 'status_class': 'muted', 'action': actions['pos_sessions']}]
         else:
             for line in cash_lines:
                 line['action'] = open_model('Session de caisse', 'pos.session', [('id', '=', line['id'])])
@@ -1855,7 +1855,7 @@ class PrimetechDashboard(models.AbstractModel):
         cash_lines = self._get_pos_session_state(period_filters).get('sessions', [])
         pos_action = self._dashboard_open_model('Sessions de caisse', 'pos.session', []) if 'pos.session' in self.env.registry else self._dashboard_open_model('Ventes PDV', 'pos.order', [])
         if not cash_lines:
-            cash_lines = [{'name': 'Aucune caisse', 'state': '-', 'user': '-', 'cashier': '-', 'balance': 0, 'current_balance': 0, 'closing_balance': 0, 'orders_total': 0, 'status_class': 'muted', 'action': pos_action}]
+            cash_lines = [{'name': 'Aucune caisse', 'state': '-', 'user': '-', 'cashier': '-', 'opening_date': '-', 'balance': 0, 'current_balance': 0, 'closing_balance': 0, 'orders_total': 0, 'status_class': 'muted', 'action': pos_action}]
         else:
             for line in cash_lines:
                 line['action'] = self._dashboard_open_model('Session de caisse', 'pos.session', [('id', '=', line['id'])])
@@ -1951,14 +1951,12 @@ class PrimetechDashboard(models.AbstractModel):
         start, end = self._get_period_bounds(period_filters)
         sale_domain = [('state', 'in', ['sale', 'done']), ('date_order', '>=', start), ('date_order', '<', fields.Datetime.to_datetime(end) + timedelta(days=1))]
         warehouse_values = defaultdict(float)
-        warehouse_orders = defaultdict(int)
-        for group in self.env['sale.order'].read_group(sale_domain, ['amount_total:sum', 'id:count'], ['warehouse_id'], lazy=False):
+        for group in self.env['sale.order'].read_group(sale_domain, ['amount_total:sum'], ['warehouse_id'], lazy=False):
             warehouse_data = group.get('warehouse_id')
             if warehouse_data:
                 warehouse_values[warehouse_data[0]] += group.get('amount_total', 0.0) or 0.0
-                warehouse_orders[warehouse_data[0]] += group.get('id_count', group.get('__count', 0)) or 0
         if 'pos.order' in self.env.registry:
-            pos_groups = self.env['pos.order'].read_group([('date_order', '>=', start), ('date_order', '<', fields.Datetime.to_datetime(end) + timedelta(days=1))], ['amount_total:sum', 'id:count'], ['config_id'], lazy=False)
+            pos_groups = self.env['pos.order'].read_group([('date_order', '>=', start), ('date_order', '<', fields.Datetime.to_datetime(end) + timedelta(days=1))], ['amount_total:sum'], ['config_id'], lazy=False)
             configs = self.env['pos.config'].browse([group['config_id'][0] for group in pos_groups if group.get('config_id')])
             config_by_id = {config.id: config for config in configs}
             for group in pos_groups:
@@ -1967,23 +1965,16 @@ class PrimetechDashboard(models.AbstractModel):
                 warehouse = config.picking_type_id.warehouse_id if config and config.picking_type_id else False
                 if warehouse:
                     warehouse_values[warehouse.id] += group.get('amount_total', 0.0) or 0.0
-                    warehouse_orders[warehouse.id] += group.get('id_count', group.get('__count', 0)) or 0
         maximum = max(warehouse_values.values(), default=0.0)
-        total = sum(warehouse_values.values())
         tones = ['green', 'orange', 'blue', 'purple', 'cyan', 'pink', 'slate']
         warehouses = self.env['stock.warehouse'].search([])
         stores = []
-        for index, warehouse in enumerate(sorted(warehouses, key=lambda item: warehouse_values.get(item.id, 0.0), reverse=True)):
+        for index, warehouse in enumerate(sorted(warehouses, key=lambda item: warehouse_values.get(item.id, 0.0), reverse=True)[:7]):
             value = warehouse_values.get(warehouse.id, 0.0)
-            order_count = warehouse_orders.get(warehouse.id, 0)
             stores.append({
                 'name': warehouse.display_name,
                 'value': value,
                 'percent': value / maximum * 100 if maximum else 0.0,
-                'share': value / total * 100 if total else 0.0,
-                'order_count': order_count,
-                'average_ticket': value / order_count if order_count else 0.0,
-                'rank': index + 1,
                 'tone': tones[index % len(tones)],
                 'action': self._dashboard_open_model('Ventes ' + warehouse.display_name, 'sale.order', sale_domain + [('warehouse_id', '=', warehouse.id)]),
             })

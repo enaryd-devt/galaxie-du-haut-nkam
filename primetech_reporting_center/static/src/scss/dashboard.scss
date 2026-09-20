@@ -342,7 +342,7 @@
     color: #2a3a4f;
 
     border-bottom: 1px solid #e2e8f0;
-    
+
     box-shadow:
         0 4px 12px rgba(0,0,0,.04);
 
@@ -3664,9 +3664,9 @@
 
 /* Monochrome executive redesign based on Tome 11 user roles. */
 .pt-reporting-dashboard {
-    background: #f4f4f2;
-    color: #111;
-    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: mix($o-brand-primary, $o-view-background-color, 3%);
+    color: $o-gray-900;
+    font-family: inherit;
 
     .pt-dashboard-header h1,
     .pt-dashboard-header p,
@@ -3680,7 +3680,7 @@
     button,
     td,
     th {
-        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: inherit;
     }
 
     .pt-dashboard-header {
@@ -3946,7 +3946,8 @@
 
 .pt-exec-board {
     color: #0f1b33;
-    font-family: "Segoe UI", system-ui, sans-serif;
+    // The dashboard inherits Odoo's active interface font and theme.
+    font-family: inherit;
 
     h1, h3, p { margin: 0; }
     h1 { font-size: 20px; font-weight: 700; line-height: 1.05; }
@@ -4223,38 +4224,6 @@
         padding: 6px 10px;
     }
 
-    .pt-eb-profile {
-        align-items: center;
-        display: flex;
-        gap: 9px;
-        margin-left: 8px;
-    }
-
-    .pt-eb-avatar {
-        align-items: center;
-        background: linear-gradient(135deg, #0f172a, #ef7d45);
-        border: 3px solid #fff;
-        border-radius: 50%;
-        color: #fff;
-        display: flex;
-        font-size: 11px;
-        font-weight: 800;
-        height: 42px;
-        justify-content: center;
-        width: 42px;
-    }
-
-    .pt-eb-profile p { display: grid; gap: 2px; }
-    .pt-eb-profile strong { font-size: 11px; }
-    .pt-eb-profile small { color: #008541; font-size: 10px; font-weight: 700; }
-    .pt-eb-profile small i { background: #0bb15f; border-radius: 50%; display: inline-block; height: 7px; margin-right: 4px; width: 7px; }
-    .pt-eb-live-dot { animation: ptEbPulse 1.2s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(11, 177, 95, .55); }
-
-    @keyframes ptEbPulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { box-shadow: 0 0 0 5px rgba(11, 177, 95, 0); opacity: .35; transform: scale(.75); }
-    }
-
     .pt-eb-kpis,
     .pt-eb-grid-main,
     .pt-eb-grid-secondary,
@@ -4441,6 +4410,184 @@
 
     .pt-eb-footer strong { color: #071a44; }
     .pt-eb-footer i { color: #2f80ed; }
+}
+
+// Cash-session KPI: show the four operational columns immediately, without a horizontal scroll.
+.pt-exec-board .pt-eb-cash-kpi {
+    min-width: 0;
+
+    .pt-eb-cash-table {
+        table-layout: fixed;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .pt-eb-cash-table th,
+    .pt-eb-cash-table td {
+        min-width: 0;
+        overflow: hidden;
+        padding: .5rem .22rem;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .pt-eb-cash-table th { font-size: clamp(.55rem, .68vw, .66rem); }
+    .pt-eb-cash-table td { font-size: clamp(.57rem, .72vw, .72rem); line-height: 1.2; }
+    .pt-eb-cash-table th:nth-child(1), .pt-eb-cash-table td:nth-child(1) { width: 25%; }
+    .pt-eb-cash-table th:nth-child(2), .pt-eb-cash-table td:nth-child(2) { width: 34%; }
+    .pt-eb-cash-table th:nth-child(3), .pt-eb-cash-table td:nth-child(3) { width: 24%; }
+    .pt-eb-cash-table th:nth-child(4), .pt-eb-cash-table td:nth-child(4) { width: 17%; }
+
+    .pt-eb-cash-table strong {
+        display: block;
+        font-size: inherit;
+        line-height: inherit;
+        overflow-wrap: anywhere;
+    }
+
+    .pt-eb-cash-table .pt-eb-status {
+        display: inline-block;
+        font-size: clamp(.5rem, .63vw, .62rem);
+        line-height: 1.1;
+        max-width: 100%;
+        padding: .2rem .28rem;
+        text-align: center;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 767px) {
+    .pt-exec-board .pt-eb-cash-kpi .pt-eb-cash-table {
+        margin-top: .5rem;
+    }
+
+    .pt-exec-board .pt-eb-cash-kpi .pt-eb-cash-table th,
+    .pt-exec-board .pt-eb-cash-kpi .pt-eb-cash-table td {
+        padding: .48rem .16rem;
+    }
+}
+
+// Executive dashboard palette: all accents derive from the active Odoo theme.
+.pt-exec-board {
+    --pt-eb-theme: #{$o-brand-primary};
+    --pt-eb-surface: #{$o-view-background-color};
+    --pt-eb-border: #{mix($o-brand-primary, $o-view-background-color, 18%)};
+    --pt-eb-soft: #{mix($o-brand-primary, $o-view-background-color, 8%)};
+
+    color: $o-gray-900;
+
+    .pt-eb-card,
+    .pt-eb-kpi,
+    .pt-eb-filter-select,
+    .pt-eb-filter-control select,
+    .pt-eb-card-period input,
+    .pt-eb-custom-dates input,
+    .pt-eb-partner-search input,
+    .pt-eb-partner-total,
+    .pt-eb-category-action-menu,
+    .pt-eb-cashflow-action-menu,
+    .pt-eb-top-watch-action-menu {
+        background: $o-view-background-color !important;
+        border-color: var(--pt-eb-border) !important;
+        color: $o-gray-900;
+    }
+
+    .pt-eb-icon,
+    .pt-eb-store .bar,
+    .pt-eb-chart-point i,
+    .pt-eb-donut,
+    .pt-mini-donut,
+    .pt-eb-perf b i,
+    .load b {
+        background: var(--pt-eb-theme) !important;
+    }
+
+    .pt-eb-icon,
+    .pt-eb-donut,
+    .pt-mini-donut { color: $o-view-background-color !important; }
+
+    // Logistics indicators keep one theme color, differentiated by readable
+    // tonal steps instead of unrelated fixed colors.
+    .pt-eb-logistics .pt-mini-donut {
+        background: conic-gradient(
+            $o-brand-primary 0 38%,
+            mix($o-brand-primary, $o-view-background-color, 78%) 38% 62%,
+            mix($o-brand-primary, $o-view-background-color, 58%) 62% 80%,
+            mix($o-brand-primary, $o-view-background-color, 35%) 80% 100%
+        ) !important;
+    }
+
+    .pt-eb-logistics article:nth-child(2) .pt-mini-donut {
+        background: conic-gradient(
+            $o-brand-primary 0 28%,
+            mix($o-brand-primary, $o-view-background-color, 72%) 28% 54%,
+            mix($o-brand-primary, $o-view-background-color, 50%) 54% 78%,
+            mix($o-brand-primary, $o-view-background-color, 28%) 78% 100%
+        ) !important;
+    }
+
+    .pt-eb-logistics article:nth-child(3) .pt-mini-donut {
+        background: conic-gradient(
+            $o-brand-primary 0 46%,
+            mix($o-brand-primary, $o-view-background-color, 75%) 46% 68%,
+            mix($o-brand-primary, $o-view-background-color, 52%) 68% 86%,
+            mix($o-brand-primary, $o-view-background-color, 30%) 86% 100%
+        ) !important;
+    }
+
+    .pt-eb-logistics .pt-mini-donut strong,
+    .pt-eb-logistics .pt-mini-donut span { background: $o-view-background-color !important; }
+
+    .pt-eb-kpi small,
+    .pt-eb-bank strong,
+    .pt-eb-partner-kpi td strong,
+    .pt-eb-detail-link,
+    .alerts button,
+    .pt-eb-history-header h3 i,
+    .pt-eb-perf > i,
+    .pt-eb-bank span i,
+    .pt-eb-footer i,
+    .pt-eb-metric-list [class*="tone-"] { color: var(--pt-eb-theme) !important; }
+
+    .pt-eb-store div,
+    .load,
+    .pt-eb-perf b,
+    .pt-eb-flow > div,
+    .quick button,
+    .pt-eb-alert i,
+    .pt-eb-partner-total,
+    .pt-eb-history-table tbody tr:hover,
+    .pt-eb-card li:hover { background: var(--pt-eb-soft) !important; }
+
+    .pt-eb-alert,
+    td,
+    .pt-eb-stock span,
+    .pt-eb-stock strong,
+    .pt-eb-history-table th { border-color: var(--pt-eb-border) !important; }
+
+    .pt-eb-status-pill,
+    .pt-eb-event-badge,
+    .pt-eb-state-badge,
+    .pt-eb-status,
+    .open,
+    .closed,
+    .danger,
+    .warn,
+    .info,
+    .ok { background-color: var(--pt-eb-soft) !important; color: var(--pt-eb-theme) !important; }
+
+    .pt-eb-chart-point i,
+    .pt-eb-curve-chart polyline { stroke: var(--pt-eb-theme) !important; }
+
+    .pt-eb-footer,
+    .pt-eb-header p,
+    .pt-eb-header small,
+    .pt-eb-card small,
+    .pt-eb-chart-point em,
+    .pt-eb-history-table td > small { color: $text-muted !important; }
 }
 
 /* Pixel-oriented layout used by the new functional overview screens. */
@@ -6966,57 +7113,20 @@
     }
 
     .stores .pt-eb-stores-scroll {
-        // Six lignes enrichies restent visibles ; les suivantes défilent verticalement.
-        max-height: 20rem;
-        min-height: 20rem;
+        max-height: 10.95rem; // 7 lignes compactes
         margin-top: .4rem;
         padding-right: .2rem;
 
         .pt-eb-store {
-            align-items: center;
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-            display: grid;
-            grid-template-columns: 1.25rem minmax(0, 1fr) minmax(5.75rem, auto);
-            gap: .35rem;
+            grid-template-columns: minmax(0, 6.3rem) minmax(2.5rem, 1fr) minmax(4.4rem, auto);
+            gap: .38rem;
             margin-top: 0;
-            padding: .34rem .06rem;
-            text-align: left;
-            width: 100%;
+            padding: .39rem .08rem;
         }
 
         .pt-eb-store + .pt-eb-store { border-top: 1px solid #eef2f7; }
-        .pt-eb-store > .pt-eb-store-main,
-        .pt-eb-store-title,
-        .pt-eb-store-metrics {
-            background: transparent;
-            border-radius: 0;
-            height: auto;
-            overflow: visible;
-        }
-        .pt-eb-store-rank {
-            align-items: center;
-            background: #edf4ff;
-            border-radius: 50%;
-            color: #2864b4;
-            display: inline-flex;
-            font-size: .63rem;
-            font-weight: 800;
-            height: 1.15rem;
-            justify-content: center;
-            width: 1.15rem;
-        }
-        .pt-eb-store-main { min-width: 0; }
-        .pt-eb-store-title { display: block; min-width: 0; }
-        .pt-eb-store-title strong { color: #102650; display: -webkit-box; font-size: .6rem; line-height: 1.15; max-height: 2.3em; overflow: hidden; text-align: left; text-overflow: clip; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-        .pt-eb-store-title small { color: #657b9d; display: block; font-size: .5rem; margin-top: .08rem; white-space: nowrap; }
-        .pt-eb-store-bar { background: #e9eff6; border-radius: 99px; height: .24rem; margin-top: .2rem; overflow: hidden; }
-        .pt-eb-store-bar .bar { display: block; height: 100%; }
-        .pt-eb-store-metrics { min-width: 0; text-align: right; }
-        .pt-eb-store-metrics strong { color: #102650; display: block; font-size: .62rem; white-space: nowrap; }
-        .pt-eb-store-metrics small { color: #4d70a5; display: block; font-size: .5rem; margin-top: .05rem; white-space: nowrap; }
-        .pt-eb-store-empty { color: #657b9d; font-size: .72rem; margin: 1rem 0; text-align: center; }
+        .pt-eb-store span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pt-eb-store strong { font-size: .63rem; }
     }
 
     .pt-category-rows.pt-eb-categories-scroll {
@@ -7361,24 +7471,7 @@
 
 @media (max-width: 760px) {
     .pt-exec-board {
-        .stores .pt-eb-stores-scroll {
-            max-height: 20.4rem;
-            min-height: 0;
-
-            .pt-eb-store {
-                grid-template-columns: 1.55rem minmax(0, 1fr);
-                padding: .58rem .08rem;
-            }
-
-            .pt-eb-store-title { display: block; }
-            .pt-eb-store-title strong,
-            .pt-eb-store-title small { display: block; }
-            .pt-eb-store-title strong { font-size: .74rem; }
-            .pt-eb-store-title small { font-size: .6rem; margin-top: .15rem; overflow: hidden; text-overflow: ellipsis; }
-            .pt-eb-store-metrics { align-items: baseline; display: flex; gap: .35rem; grid-column: 2; text-align: left; }
-            .pt-eb-store-metrics strong { font-size: .74rem; }
-            .pt-eb-store-metrics small { font-size: .58rem; }
-        }
+        .stores .pt-eb-stores-scroll { max-height: 11.3rem; }
         /* La situation des caisses utilise toute la largeur de sa carte. */
         .pt-eb-grid-secondary > .pt-eb-card:first-child .pt-eb-cash-scroll {
             width: 100%;
