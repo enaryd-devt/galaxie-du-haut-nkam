@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_product_label_a4" model="ir.actions.report">
+        <field name="name">Étiquettes PrimeTech A4</field><field name="model">primetech.product.label.layout</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="report_file">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="paperformat_id" ref="paperformat_product_label_a4"/>
+        <field name="print_report_name">object.format_filename or 'Etiquettes produits'</field>
+    </record>
+    <record id="action_report_product_label_a5" model="ir.actions.report">
+        <field name="name">Étiquettes PrimeTech A5</field><field name="model">primetech.product.label.layout</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="report_file">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="paperformat_id" ref="paperformat_product_label_a5"/>
+        <field name="print_report_name">object.format_filename or 'Etiquettes produits'</field>
+    </record>
+    <record id="action_report_product_label_a6" model="ir.actions.report">
+        <field name="name">Étiquettes PrimeTech A6</field><field name="model">primetech.product.label.layout</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="report_file">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="paperformat_id" ref="paperformat_product_label_a6"/>
+        <field name="print_report_name">object.format_filename or 'Etiquettes produits'</field>
+    </record>
+    <record id="action_report_product_label_a7" model="ir.actions.report">
+        <field name="name">Étiquettes PrimeTech A7</field><field name="model">primetech.product.label.layout</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="report_file">primetech_product_label_4x10.report_product_label_custom</field>
+        <field name="paperformat_id" ref="paperformat_product_label_a7"/>
+        <field name="print_report_name">object.format_filename or 'Etiquettes produits'</field>
+    </record>
+</odoo>
